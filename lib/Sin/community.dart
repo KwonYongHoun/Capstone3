@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'fBoard.dart'; // fBoard 페이지를 import
 
+//djfdkjfskljdflksjdkjlfjdkj
 class CommunityPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

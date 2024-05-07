@@ -23,7 +23,7 @@ class _MyHomePageState extends State<MyHomePage> {
     CommunityPage(),
     ExerciseGuidePage(),
     HomeScreen(),
-    MyRecodePage(),
+    MyRecordPage(selectedDate: DateTime.now()),
     MypageScreen(),
     FindId(),
     FindPassword(),

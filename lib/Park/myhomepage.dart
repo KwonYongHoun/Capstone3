@@ -48,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Image.asset(
-              'assets/sku.jpeg', // 로고 이미지 경로
+              '../assets/sku.jpeg', // 로고 이미지 경로
               height: 30, // 이미지 높이
               width: 50, // 이미지 너비
               fit: BoxFit.contain, // 이미지 채우기 옵션

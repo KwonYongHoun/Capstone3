@@ -10,26 +10,29 @@ class MyRecordMachinePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$exercise 운동'),
+        title: Text('$exercise 운동'), // 페이지 상단에 선택한 운동 이름을 표시
       ),
       body: Center(
         child: GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: 3, // 너비 대 높이 비율 조정
-          crossAxisSpacing: 8, // 수평 간격
-          mainAxisSpacing: 8, // 수직 간격
-          padding: EdgeInsets.all(16),
-          children: _buildMachineButtons(context, exercise),
+          childAspectRatio: 3, // 버튼의 너비 대 높이 비율 조정
+          crossAxisSpacing: 8, // 버튼 사이의 수평 간격
+          mainAxisSpacing: 8, // 버튼 사이의 수직 간격
+          padding: const EdgeInsets.all(16),
+          children: _buildMachineButtons(
+              context, exercise), // 선택한 운동에 따라 기구 버튼들을 생성하여 반환
         ),
       ),
     );
   }
 
+  // 선택한 운동에 따라 해당하는 기구 버튼들을 생성하여 반환하는 함수
   List<Widget> _buildMachineButtons(BuildContext context, String exercise) {
     List<String> machines = [];
 
+    // 선택한 운동에 따라 해당하는 기구들의 목록을 설정
     switch (exercise) {
       case '가슴':
         machines = [
@@ -76,11 +79,13 @@ class MyRecordMachinePage extends StatelessWidget {
         break;
     }
 
+    // 각 기구에 대한 버튼 위젯들을 생성하여 리스트로 반환
     return machines
         .map((machine) => _buildMachineButton(context, machine))
         .toList();
   }
 
+  // 각 운동 기구 버튼을 생성하는 함수
   Widget _buildMachineButton(BuildContext context, String text) {
     return ElevatedButton(
       onPressed: () {
@@ -88,10 +93,25 @@ class MyRecordMachinePage extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => MyRecordMachineRecord(exercise: text)),
+              builder: (context) => MyRecordMachineRecord(
+                  exercise: text)), // 해당 기구에 대한 기록 페이지로 이동
         );
       },
-      child: Text(text),
+      style: ButtonStyle(
+        backgroundColor:
+            MaterialStateProperty.all<Color>(Colors.white), // 버튼의 배경색을 하얀색으로 설정
+        elevation: MaterialStateProperty.all<double>(0), // 그림자 효과 제거
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8), // 버튼의 모서리를 둥글게 설정
+            side: const BorderSide(color: Colors.grey), // 버튼의 테두리를 회색으로 설정
+          ),
+        ),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(color: Colors.black), // 버튼에 표시될 기구 이름
+      ),
     );
   }
 }

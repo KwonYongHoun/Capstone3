@@ -3,6 +3,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:health/Kim/record/myrecord_page.dart';
 import 'package:health/Kim/record/myrecord_statistic.dart';
 
+// 문제: 현재 달이 아닌 다른 달의 날짜를 선택하려고 하면 선택이 되지 않고 현재의 달로 되돌아옴
 void main() {
   runApp(const MyApp());
 }

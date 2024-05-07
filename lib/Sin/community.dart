@@ -46,23 +46,20 @@ class CommunityPage extends StatelessWidget {
         padding: EdgeInsets.only(top: 10), // 상단바와 자유게시판 사이 간격 조정
         child: Column(
           children: [
-            _buildBoardButton(context, "자유게시판", 'assets/images/b.b_1.png', () {
+            _buildBoardButton(context, "자유게시판", '../assets/b.b_1.png', () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => FBoardPage()), // fBoard 페이지로 이동
               );
             }),
-            _buildBoardButton(context, "헬스 파트너 찾기", 'assets/images/b.b_2.png',
-                () {
+            _buildBoardButton(context, "헬스 파트너 찾기", '../assets/b.b_2.png', () {
               // 다른 보드를 눌렀을 때의 동작 추가
             }),
-            _buildBoardButton(context, "운동 고민 게시판", 'assets/images/b.b_3.png',
-                () {
+            _buildBoardButton(context, "운동 고민 게시판", '../assets/b.b_3.png', () {
               // 다른 보드를 눌렀을 때의 동작 추가
             }),
-            _buildBoardButton(context, "식단공유 게시판", 'assets/images/b.b_4.png',
-                () {
+            _buildBoardButton(context, "식단공유 게시판", '../assets/b.b_4.png', () {
               // 다른 보드를 눌렀을 때의 동작 추가
             }),
           ],

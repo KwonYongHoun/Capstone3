@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:health/Kwon/MemberManagement/MemberMain.dart';
+import 'package:health/Kwon/MemberMain.dart';
 
 //관리자모드 페이지
 class AdminModeApp extends StatelessWidget {

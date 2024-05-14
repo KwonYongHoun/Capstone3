@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'myhomepage.dart';
 import 'findid.dart';
 import 'findpassword.dart';
+import '../member.dart';
+import '../Kwon/AdminMain.dart';
+
+//입력된 아이디 들고있는 변수
+String EnteredID = '';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -55,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
                 Padding(
                   padding: const EdgeInsets.only(left: 0),
                   child: Text(
-                    '초기 비밀번호 : 회원번호',
+                    '초기 비밀번호 : 전화번호',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -101,12 +106,53 @@ class _LoginPageState extends State<LoginPage> {
             ),
             SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () {
-                // 로그인 버튼 클릭 시 MyHomePage로 이동
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
+              onPressed: () async {
+                // Retrieve entered ID and password
+                String enteredId = idController.text;
+                String enteredPassword = passwordController.text;
+
+                //관리자모드 실행 : Id admin / 비밀번호 master
+                if (enteredId == 'admin' && enteredPassword == 'master') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AdminModeHomePage()),
+                  );
+                }
+
+                if (enteredId == '1' && enteredPassword == '1') {
+                  EnteredID = enteredId;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyHomePage()),
+                  );
+                }
+
+                // Query the database for a member with the entered ID
+                List<Member> members =
+                    await DatabaseHelper.searchMembers(enteredId);
+
+                if (members.isNotEmpty) {
+                  Member member = members.first;
+                  // Compare the retrieved member's password with the entered password
+                  if (member.password.toString() == enteredPassword) {
+                    // Login successful
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyHomePage()),
+                    );
+                  } else {
+                    // Password does not match
+                    setState(() {
+                      errorMessage = '비밀번호가 올바르지 않습니다.';
+                    });
+                  }
+                } else {
+                  // Member with the entered ID not found
+                  setState(() {
+                    errorMessage = '해당 ID가 존재하지 않습니다.';
+                  });
+                }
               },
               child: Padding(
                 padding: const EdgeInsets.all(15.0),

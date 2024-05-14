@@ -58,7 +58,7 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
                     Expanded(
                       child: Text(
                         '세트 ${index + 1}',
-                        style: TextStyle(fontSize: 16),
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ),
                     const SizedBox(width: 8),

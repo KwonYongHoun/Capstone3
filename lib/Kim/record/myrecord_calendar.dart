@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:health/Kim/record/myrecord_page.dart';
 import 'package:health/Kim/record/myrecord_statistic.dart';
+// myhomepage.dart에서 'package/record/myrecord_page.dart'가 아니라 'package/record/calendar.dart'로 바꿔야함
 
 // 문제: 현재 달이 아닌 다른 달의 날짜를 선택하려고 하면 선택이 되지 않고 현재의 달로 되돌아옴
 void main() {

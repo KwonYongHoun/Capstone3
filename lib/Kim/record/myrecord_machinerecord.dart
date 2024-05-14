@@ -12,6 +12,7 @@ class MyRecordMachineRecord extends StatefulWidget {
 class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
   List<SetData> sets = [];
   bool _isSaved = false;
+  String _selectedIntensity = ''; // 운동 강도를 저장할 변수
 
   @override
   void initState() {
@@ -41,6 +42,19 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
                 hintText: '운동 시간을 입력하세요',
                 border: OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '운동 강도',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ExerciseIntensitySelector(
+              onIntensitySelected: (intensity) {
+                setState(() {
+                  _selectedIntensity = intensity;
+                });
+              },
             ),
             const SizedBox(height: 16),
             const Text(
@@ -148,4 +162,47 @@ class SetData {
   int reps;
 
   SetData({required this.weight, required this.reps});
+}
+
+class ExerciseIntensitySelector extends StatefulWidget {
+  final Function(String) onIntensitySelected;
+
+  ExerciseIntensitySelector({required this.onIntensitySelected});
+
+  @override
+  _ExerciseIntensitySelectorState createState() =>
+      _ExerciseIntensitySelectorState();
+}
+
+class _ExerciseIntensitySelectorState extends State<ExerciseIntensitySelector> {
+  String _selectedIntensity = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildIntensityButton('가볍게'),
+        _buildIntensityButton('적당히'),
+        _buildIntensityButton('격하게'),
+      ],
+    );
+  }
+
+  Widget _buildIntensityButton(String intensity) {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          _selectedIntensity = intensity;
+        });
+        widget.onIntensitySelected(intensity);
+      },
+      child: Text(intensity),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _selectedIntensity == intensity
+            ? Colors.blue
+            : null, // 버튼의 배경색을 변경합니다.
+      ),
+    );
+  }
 }

@@ -18,7 +18,10 @@ class ExerciseGuidePage extends StatelessWidget {
             padding: EdgeInsets.all(16.0),
             child: Text(
               '운동 부위 선택',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           Expanded(
@@ -60,7 +63,7 @@ class ExercisePartButton extends StatelessWidget {
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
-              side: const BorderSide(color: Colors.grey), // 테두리를 회색으로 설정
+              side: const BorderSide(color: Colors.blue), // 테두리를 회색으로 설정
             ),
           ),
           padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
@@ -133,7 +136,7 @@ class ExerciseEquipmentCard extends StatelessWidget {
       decoration: BoxDecoration(
         // 테두리 스타일 지정
         color: Colors.white, // 배경색을 하얀색으로 설정
-        border: Border.all(color: Colors.grey), // 테두리를 회색으로 설정
+        border: Border.all(color: Colors.blue), // 테두리를 회색으로 설정
         borderRadius: BorderRadius.circular(10.0), // 테두리를 둥글게 만듦
       ),
       child: ListTile(
@@ -244,6 +247,32 @@ final Map<String, List<ExerciseEquipment>> exerciseEquipment = {
         imageUrl: 'assets/dips.jpg',
         url:
             'https://www.youtube.com/results?search_query=%ED%91%B8%EC%8B%9C%EC%97%85'),
+    ExerciseEquipment(
+        name: '힌두 푸시업',
+        description: '1. 일반적인 푸시업 자세에서, 양발은 살짝 넓게 벌리고 엉덩이를 위로 올려줍니다.\n\n'
+            '2. 팔을 굽히면서 상체를 앞방향으로 밀어줍니다. 턱, 가슴, 복부 순으로 지면과 가까워지도록 움직입니다.\n\n'
+            '3. 복근과 둔근의 긴장상태를 유지하며 상체를 일으켜 세웁니다.\n\n'
+            '4. 팔을 뒤로 밀며 1번의 자세로 돌아갑니다.\n\n',
+        imageUrl: 'assets/dips.jpg',
+        url:
+            'https://www.youtube.com/results?search_query=%ED%9E%8C%EB%91%90+%ED%91%B8%EC%8B%9C%EC%97%85'),
+    ExerciseEquipment(
+        name: '클랩 푸시업',
+        description: '1. 양팔을 가슴 옆에 두고 바닥에 엎드립니다.\n\n'
+            '2. 복근과 둔근에 힘을 준 상태로 팔꿈치를 힘차게 피며 올라옵니다.\n\n'
+            '3. 양손이 바닥에서 떨어질만큼 상체를 밀어올린 상태에서 박수를 칩니다.\n\n'
+            '4. 양팔로 중량을 유지하면서 시작 자세로 돌아갑니다.\n\n',
+        imageUrl: 'assets/dips.jpg',
+        url:
+            'https://www.youtube.com/results?search_query=%ED%81%B4%EB%9E%A9+%ED%91%B8%EC%8B%9C%EC%97%85'),
+    ExerciseEquipment(
+        name: '덤벨 스퀴즈 프레스',
+        description: '1. 벤치에 누운 상태에서 양손등이 바깥쪽을 향하도록 덤벨을 세로로 잡습니다.\n\n'
+            '2. 가슴의 자극을 느끼면서 수직방향으로 덤벨을 밀어올립니다.\n\n'
+            '3. 코로 호흡하면서 덤벨을 천천히내려 시작자세로 돌아갑니다.\n\n',
+        imageUrl: 'assets/dips.jpg',
+        url:
+            'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EC%8A%A4%ED%80%B4%EC%A6%88+%ED%94%84%EB%A0%88%EC%8A%A4'),
   ],
   '어깨': [
     ExerciseEquipment(
@@ -263,6 +292,78 @@ final Map<String, List<ExerciseEquipment>> exerciseEquipment = {
       imageUrl: 'assets/side_lateral_raise.jpg',
       url:
           'https://www.youtube.com/results?search_query=%EC%88%84%EB%8D%94+%ED%94%84%EB%A0%88%EC%8A%A4+%EB%A8%B8%EC%8B%A0',
+    ),
+    ExerciseEquipment(
+      name: '오버헤드 프레스',
+      description: '1. 바벨을 어깨너비로 잡고 쇄골 위에 올려둡니다.\n\n'
+          '2. 등에 힘을 주고 가슴을 피면서 바벨을 위로 밀어올립니다.\n\n'
+          '3. 바벨이 올라간 동선을 따라 천천히내려 시작 자세로 돌아옵니다.\n\n',
+      imageUrl: 'assets/chest_press.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EC%98%A4%EB%B2%84%ED%97%A4%EB%93%9C+%ED%94%84%EB%A0%88%EC%8A%A4',
+    ),
+    ExerciseEquipment(
+      name: '덤벨 숄더 프레스',
+      description: '1. 양손에 덤벨을 잡고 팔을 옆으로 벌려서, 덤벨을 머리와 나란히 위치시킵니다.\n\n'
+          '2. 어깨를 아래방향으로 지그시 누르면서 덤벨을 수직 방향으로 밀어올립니다.\n\n'
+          '3. 어깨의 자극을 느끼면서, 덤벨을 내려 시작 자세로 돌아롭니다.(이때 팔꿈치가 너무 아래로 내려가지 않도록 유의합니다.)\n\n',
+      imageUrl: 'assets/chest_press.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EC%88%84%EB%8D%94+%ED%94%84%EB%A0%88%EC%8A%A4',
+    ),
+    ExerciseEquipment(
+      name: '덤벨 프론트 프레스',
+      description: '1. 양발을 어깨너비로 적당히 벌리고, 양손에 덤벨을 쥐고 섭니다.\n\n'
+          '2. 상체의 균형을 유지하며서 한쪽 팔을 앞으로 들어올립니다.\n\n'
+          '3. 들어올린 팔을 내리고 난 뒤 2번의 상태로 돌아옵니다. 이후 반대편 팔로 운동을 수행합니다.\n\n',
+      imageUrl: 'assets/chest_press.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%ED%94%84%EB%A1%A0%ED%8A%B8+%EB%A0%88%EC%9D%B4%EC%A6%88',
+    ),
+    ExerciseEquipment(
+      name: '덤벨 레터럴 프레스',
+      description: '1. 양발을 어깨너비로 적당히 벌리고, 양손에 덤벨을 쥐고 섭니다.\n\n'
+          '2. 측면 어깨(삼각근)에 자극을 느끼면서 팔꿈치를 올린다는 생각으로 덤벨을 들어 올립니다.\n\n'
+          '3. 측면 삼각근의 자극을 느끼면서 천천히 팔을 내립니다.\n\n',
+      imageUrl: 'assets/chest_press.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EB%A0%88%ED%84%B0%EB%9F%B4+%EB%A0%88%EC%9D%B4%EC%A6%88',
+    ),
+    ExerciseEquipment(
+      name: '핸드스탠드',
+      description: '1. 양 팔을 쭉펴고 물구나무를 섭니다.\n\n'
+          '2. 자세를 유지하기 어렵다면, 벽이나 구조물에 몸을 기대 균형감각을 익히는데 집중합니다.\n\n',
+      imageUrl: 'assets/chest_press.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%ED%95%B8%EB%93%9C%EC%8A%A4%ED%83%A0%EB%93%9C',
+    ),
+    ExerciseEquipment(
+      name: '숄더 탭',
+      description: '1. 양팔을 어깨 너비만큼 벌리고 팔꿈치를 쭉펴서 바닥에 엎드립니다.\n\n'
+          '2. 한쪽 손으로 반대쪽 어깨를 가볍게 터치합니다.(이때, 몸통이 크게 움직이지 않도록 최대한 자세를 유지할 수 있도록 합니다.)\n\n'
+          '3. 터치한 손을 원위치 시킨 뒤 반대쪽 손으로 동일하게 운동을 수행합니다.\n\n',
+      imageUrl: 'assets/chest_press.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EC%88%84%EB%8D%94+%ED%83%AD',
+    ),
+    ExerciseEquipment(
+      name: '플레이트 숄더 프레스',
+      description: '1. 플레이트를 양손으로 잡고 가슴 앞에 위치시킵니다.\n\n'
+          '2. 어깨가 굽지 않도록 가슴ㅇ르 핀 상태로 플레이트를 머리 위 수직방향으로 밀어올립니다.\n\n'
+          '3. 플레이트가 올라간 동선을 따라 천천히 내려옵니다.\n\n',
+      imageUrl: 'assets/chest_press.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%ED%94%8C%EB%A0%88%EC%9D%B4%ED%8A%B8+%EC%88%84%EB%8D%94+%ED%94%84%EB%A0%88%EC%8A%A4',
+    ),
+    ExerciseEquipment(
+      name: 'Y 레이즈',
+      description:
+          '1. 타겟 부위의 효과적인 자극을 위해 가슴을 지지할 수 있도록, 바닥에 엎드리거나 벤치에 가슴을 기댑니다.\n\n'
+          '2. 양팔을 Y자 모양으로 만든 상태에서, 양팔을 최대한 위로 올립니다.\n\n'
+          '3. 등의 긴장이 완전히 풀리기 전까지 천천히 양팔을 내려줍니다.\n\n',
+      imageUrl: 'assets/chest_press.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=Y+%EB%A0%88%EC%9D%B4%EC%A6%88',
     ),
   ],
   '하체': [
@@ -411,6 +512,51 @@ final Map<String, List<ExerciseEquipment>> exerciseEquipment = {
       url:
           'https://www.youtube.com/results?search_query=%EB%B2%A4%EC%B9%98+%EB%94%A5%EC%8A%A4',
     ),
+    ExerciseEquipment(
+      name: '덤벨 리스트 컬',
+      description: '1. 벤치에 팔을 댄 상태로, 덤벨을 언더 그립(손바닥을 위로 향하게 잡는 방법)으로 잡습니다.\n\n'
+          '2. 손목을 아래쪽으로 젖혀주면서 손가락을 살짝 풀어줍니다.\n\n'
+          '3. 손가락과 손목을 최대한 높이 말아올리면서 전완근을 수축시켜줍니다.\n\n',
+      imageUrl: 'assets/Hip_Abduction.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EB%A6%AC%EC%8A%A4%ED%8A%B8+%EC%BB%AC',
+    ),
+    ExerciseEquipment(
+      name: '이지바 리스트 컬',
+      description: '1. 벤치에 양손을 올린 뒤, 이지바를 언더 그립(손바닥을 위로 향하게 잡는 방법)으로 잡습니다.\n\n'
+          '2. 손목을 아래쪽으로 젖혀주면서 손가락을 살짝 풀어줍니다.\n\n'
+          '3. 손가락과 손목을 최대한 높이 말아올리면서 전완근을 수축시켜줍니다.\n\n',
+      imageUrl: 'assets/Hip_Abduction.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EC%9D%B4%EC%A7%80%EB%B0%94+%EB%A6%AC%EC%8A%A4%ED%8A%B8+%EC%BB%AC',
+    ),
+    ExerciseEquipment(
+      name: '바벨 리스트 컬',
+      description: '1. 벤치에 양손을 올린 뒤, 바벨를 언더 그립(손바닥을 위로 향하게 잡는 방법)으로 잡습니다.\n\n'
+          '2. 손목을 아래쪽으로 젖혀주면서 손가락을 살짝 풀어줍니다.\n\n'
+          '3. 손가락과 손목을 최대한 높이 말아올리면서 전완근을 수축시켜줍니다.\n\n',
+      imageUrl: 'assets/Hip_Abduction.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%B0%94%EB%B2%A8+%EB%A6%AC%EC%8A%A4%ED%8A%B8+%EC%BB%AC',
+    ),
+    ExerciseEquipment(
+      name: '덤벨 킥백',
+      description: '1. 덤벨을 쥔 팔의 상완근 부위(삼두)가 바닥과 평행하도록 자세를 잡습니다.\n\n'
+          '2. 팔꿈치를 고정한 상태로 덤벨을 다리쪽으로 멀리 보낸다는 생각으로 들어올립니다.\n\n'
+          '3. 삼두근을 일정기간 수축한뒤, 덤벨을 내리며 시작 자세로 돌아옵니다.\n\n',
+      imageUrl: 'assets/Hip_Abduction.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%ED%82%A5%EB%B0%B1',
+    ),
+    ExerciseEquipment(
+      name: '덤벨 트라이셉 익스텐션',
+      description: '1. 양발을 골반너비로 적당히 벌리고, 덤벨을 양손으로 잡고 섭니다. \n\n'
+          '2. 덤벨을 잡은 양팔의 팔꿈치를 직각으로 만들면서 머리 뒤로 넘깁니다.\n\n'
+          '3. 팔꿈치를 고정한 상태로 덤벨을 위로 들어올립니다.\n\n',
+      imageUrl: 'assets/Hip_Abduction.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%ED%8A%B8%EB%9D%BC%EC%9D%B4%EC%85%89+%EC%9D%B5%EC%8A%A4%ED%85%90%EC%85%98',
+    ),
   ],
   '등': [
     ExerciseEquipment(
@@ -430,6 +576,83 @@ final Map<String, List<ExerciseEquipment>> exerciseEquipment = {
       imageUrl: 'assets/side_lateral_raise.jpg',
       url:
           'https://www.youtube.com/results?search_query=%EC%8B%9C%ED%8B%B0%EB%93%9C+%EC%BC%80%EC%9D%B4%EB%B8%94+%EB%A1%9C%EC%9A%B0',
+    ),
+    ExerciseEquipment(
+      name: '풀업',
+      description: '1. 팔을 어깨 너비만큼 벌리고, 손바닥이 앞을 바라본 상태로 바를 잡고 매달립니다.\n\n'
+          '2. 가슴을 편 상태로 바를 구부려 준다는 느낌으로 팔을 당겨 올라갑니다.\n\n'
+          '3. 상체가 흔들리지 않도록 자세를 유지하면서 내려옵니다.\n\n',
+      imageUrl: 'assets/side_lateral_raise.jpg',
+      url: 'https://www.youtube.com/results?search_query=%ED%92%80%EC%97%85',
+    ),
+    ExerciseEquipment(
+      name: '중량 풀업',
+      description: '1. 중량 도구를 장착하고, 팔을 어깨 너비만큼 살짝 넓게 벌린 상태로 바를 잡고 매달립니다.\n\n'
+          '2. 가슴을 편 상태로 바를 구부려 준다는 느낌으로 팔을 당겨 올라갑니다.\n\n'
+          '3. 등에 자극을 느끼면서 내려와 시작 자세로 돌아갑니다.\n\n',
+      imageUrl: 'assets/side_lateral_raise.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EC%A4%91%EB%9F%89+%ED%92%80%EC%97%85',
+    ),
+    ExerciseEquipment(
+      name: '덤벨 로우',
+      description: '1. 다리를 골반너비로 벌리고, 상체를 숙여 손등이 위로 향하게끔 덤벨을 잡습니다.\n\n'
+          '2. 허리가 구부러지지 않게 중립 상태를 유지한 채로, 무릎 높이로 덤벨을 들어올린다.\n\n'
+          '3. 팔꿈치를 몸쪽으로 붙인다는 생각으로 팔을 굽혀 덤벨을 복부까지 끌어당겨 줍니다.\n\n'
+          '4. 등의 자극을 느끼며 덤벨을 내려 2번의 자세로 돌아갑니다.\n\n',
+      imageUrl: 'assets/side_lateral_raise.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EB%A1%9C%EC%9A%B0',
+    ),
+    ExerciseEquipment(
+      name: '라잉 바벨 로우',
+      description: '1. 다리를 골반너비로 벌리고, 상체를 숙여 손등이 위로 향하게끔 덤벨을 잡습니다.\n\n'
+          '2. 허리가 구부러지지 않게 중립 상태를 유지한 채로, 무릎 높이로 덤벨을 들어올린다.\n\n'
+          '3. 팔꿈치를 몸쪽으로 붙인다는 생각으로 팔을 굽혀 덤벨을 복부까지 끌어당겨 줍니다.\n\n'
+          '4. 등의 자극을 느끼며 덤벨을 내려 2번의 자세로 돌아갑니다.\n\n',
+      imageUrl: 'assets/side_lateral_raise.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EB%A1%9C%EC%9A%B0',
+    ),
+    ExerciseEquipment(
+      name: '언더그립 바벨 로우',
+      description: '1. 다리를 골반너비로 벌리고, 상체를 숙여 손등이 위로 향하게끔 덤벨을 잡습니다.\n\n'
+          '2. 허리가 구부러지지 않게 중립 상태를 유지한 채로, 무릎 높이로 덤벨을 들어올린다.\n\n'
+          '3. 팔꿈치를 몸쪽으로 붙인다는 생각으로 팔을 굽혀 덤벨을 복부까지 끌어당겨 줍니다.\n\n'
+          '4. 등의 자극을 느끼며 덤벨을 내려 2번의 자세로 돌아갑니다.\n\n',
+      imageUrl: 'assets/side_lateral_raise.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EB%A1%9C%EC%9A%B0',
+    ),
+    ExerciseEquipment(
+      name: '정지 바벨 로우',
+      description: '1. 다리를 골반너비로 벌리고, 상체를 숙여 손등이 위로 향하게끔 덤벨을 잡습니다.\n\n'
+          '2. 허리가 구부러지지 않게 중립 상태를 유지한 채로, 무릎 높이로 덤벨을 들어올린다.\n\n'
+          '3. 팔꿈치를 몸쪽으로 붙인다는 생각으로 팔을 굽혀 덤벨을 복부까지 끌어당겨 줍니다.\n\n'
+          '4. 등의 자극을 느끼며 덤벨을 내려 2번의 자세로 돌아갑니다.\n\n',
+      imageUrl: 'assets/side_lateral_raise.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EB%A1%9C%EC%9A%B0',
+    ),
+    ExerciseEquipment(
+      name: '바벨 풀오버',
+      description: '1. 다리를 골반너비로 벌리고, 상체를 숙여 손등이 위로 향하게끔 덤벨을 잡습니다.\n\n'
+          '2. 허리가 구부러지지 않게 중립 상태를 유지한 채로, 무릎 높이로 덤벨을 들어올린다.\n\n'
+          '3. 팔꿈치를 몸쪽으로 붙인다는 생각으로 팔을 굽혀 덤벨을 복부까지 끌어당겨 줍니다.\n\n'
+          '4. 등의 자극을 느끼며 덤벨을 내려 2번의 자세로 돌아갑니다.\n\n',
+      imageUrl: 'assets/side_lateral_raise.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EB%A1%9C%EC%9A%B0',
+    ),
+    ExerciseEquipment(
+      name: '백 익스텐션',
+      description: '1. 다리를 골반너비로 벌리고, 상체를 숙여 손등이 위로 향하게끔 덤벨을 잡습니다.\n\n'
+          '2. 허리가 구부러지지 않게 중립 상태를 유지한 채로, 무릎 높이로 덤벨을 들어올린다.\n\n'
+          '3. 팔꿈치를 몸쪽으로 붙인다는 생각으로 팔을 굽혀 덤벨을 복부까지 끌어당겨 줍니다.\n\n'
+          '4. 등의 자극을 느끼며 덤벨을 내려 2번의 자세로 돌아갑니다.\n\n',
+      imageUrl: 'assets/side_lateral_raise.jpg',
+      url:
+          'https://www.youtube.com/results?search_query=%EB%8D%A4%EB%B2%A8+%EB%A1%9C%EC%9A%B0',
     ),
   ],
   '복근': [

@@ -65,31 +65,6 @@ class CommunityPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.insert_chart),
-              onPressed: () {
-                print('통계 페이지로 이동');
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                print('홈 페이지로 이동');
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.account_circle),
-              onPressed: () {
-                print('마이페이지로 이동');
-              },
-            ),
-          ],
-        ),
-      ),
     );
   }
 

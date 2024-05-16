@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:health/Park/loginpage.dart';
 
 class FindPassword extends StatefulWidget {
   @override
@@ -11,10 +14,13 @@ class _FindPasswordState extends State<FindPassword> {
   final TextEditingController _IdController = TextEditingController();
   TextEditingController _verificationCodeController = TextEditingController();
   bool _isVerificationCodeValid = false;
+  bool _isNameValid = false;
   bool _isPhoneValid = false; // 휴대폰 번호 유효성 검사 상태
   bool _isVerificationCodeSent = false; // 인증번호 보내기 버튼이 눌렸는지 확인하는 상태
   bool _isCodeValid = false;
   bool _isIdValid = false;
+  Timer? _timer;
+  int _remainingTime = 180;
 
   @override
   void dispose() {
@@ -22,6 +28,7 @@ class _FindPasswordState extends State<FindPassword> {
     _phoneController.dispose();
     _IdController.dispose();
     _verificationCodeController.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -30,6 +37,103 @@ class _FindPasswordState extends State<FindPassword> {
         '이름: ${_nameController.text}, 전화번호: ${_phoneController.text}, 인증번호: ${_verificationCodeController.text}');
     setState(() {
       _isVerificationCodeSent = true;
+      _remainingTime = 180;
+    });
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_remainingTime > 0) {
+        setState(() {
+          _remainingTime--;
+        });
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  void _verifyCode() {
+    if (_remainingTime <= 0) {
+      _showExpiredDialog();
+    } else if (_verificationCodeController.text != "1234") {
+      _showIncorrectCodeDialog();
+    } else {
+      _showSuccessDialog();
+    }
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('인증 성공'),
+          content: Text("비밀번호는 ****입니다."),
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                ); // 로그인 페이지로 이동
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showIncorrectCodeDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('인증번호 오류'),
+          content: Text('인증번호를 다시 확인해주세요.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showExpiredDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('인증 시간 만료'),
+          content: Text('인증시간이 만료되었습니다. 인증번호를 재전송해주세요.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _updateFormStatus() {
+    setState(() {
+      _isNameValid = _nameController.text.isNotEmpty;
+      _isIdValid = _IdController.text.isNotEmpty;
+      _isPhoneValid = _phoneController.text.length == 11;
     });
   }
 
@@ -67,12 +171,7 @@ class _FindPasswordState extends State<FindPassword> {
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
                   onChanged: (value) {
-                    setState(() {
-                      _isIdValid == value.isNotEmpty &&
-                          _nameController.text.isNotEmpty &&
-                          _phoneController.text.isNotEmpty &&
-                          _phoneController.text.length == 11;
-                    });
+                    _updateFormStatus();
                   },
                 ),
                 SizedBox(height: 10),
@@ -95,10 +194,7 @@ class _FindPasswordState extends State<FindPassword> {
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
                   onChanged: (value) {
-                    setState(() {
-                      _isPhoneValid = value.isNotEmpty &&
-                          _phoneController.text.length == 11;
-                    });
+                    _updateFormStatus();
                   },
                 ),
                 SizedBox(height: 10),
@@ -127,9 +223,7 @@ class _FindPasswordState extends State<FindPassword> {
                         keyboardType: TextInputType.phone,
                         onChanged: (value) {
                           if (value.length <= 11) {
-                            setState(() {
-                              _isPhoneValid = value.length == 11;
-                            });
+                            _updateFormStatus();
                           } else {
                             // 사용자가 4자리를 초과하여 입력하는 경우, 입력값을 4자리로 제한
                             setState(() {
@@ -147,9 +241,13 @@ class _FindPasswordState extends State<FindPassword> {
                     ),
                     SizedBox(width: 13),
                     ElevatedButton(
-                      onPressed: _isPhoneValid ? _sendVerificationCode : null,
+                      onPressed: _isIdValid && _isNameValid && _isPhoneValid
+                          ? _sendVerificationCode
+                          : null,
                       child: Text(
-                        _isVerificationCodeSent ? '재전송' : '인증번호 보내기',
+                        _isVerificationCodeSent
+                            ? '        재전송        '
+                            : '인증번호 보내기',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.green[300]),
@@ -169,6 +267,14 @@ class _FindPasswordState extends State<FindPassword> {
                     ),
                   ],
                 ),
+                if (_isVerificationCodeSent)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(160, 25, 160, 5),
+                    child: Text(
+                      '남은 시간: ${_remainingTime ~/ 60}:${(_remainingTime % 60).toString().padLeft(2, '0')}',
+                      style: TextStyle(fontSize: 16, color: Colors.red),
+                    ),
+                  ),
                 if (!_isPhoneValid &&
                     _phoneController.text.isNotEmpty &&
                     _phoneController.text.length < 11)
@@ -243,11 +349,7 @@ class _FindPasswordState extends State<FindPassword> {
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: ElevatedButton(
-                  onPressed: _isVerificationCodeValid
-                      ? () {
-                          // 인증하기 로직 추가
-                        }
-                      : null,
+                  onPressed: _isVerificationCodeValid ? _verifyCode : null,
                   child: Text('인증하기',
                       style: TextStyle(
                           fontWeight: FontWeight.bold, color: Colors.white)),

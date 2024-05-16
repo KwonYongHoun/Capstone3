@@ -56,6 +56,7 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('회원권 관리'),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(30.0),

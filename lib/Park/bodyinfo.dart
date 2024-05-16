@@ -21,6 +21,7 @@ class _BodyInfoPageState extends State<BodyInfoPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('회원 신체 정보'),
+        centerTitle: true,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),

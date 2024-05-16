@@ -31,6 +31,7 @@ class _PasswordChangePageState extends State<PasswordChangePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('비밀번호 변경'),
+        centerTitle: true,
       ),
       body: Form(
         key: _formKey,

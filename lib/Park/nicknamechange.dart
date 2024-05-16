@@ -19,6 +19,7 @@ class _NicknameChangePageState extends State<NicknameChangePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('닉네임 변경'),
+        centerTitle: true,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),

@@ -49,11 +49,11 @@ class _MyPageScreenState extends State<MypageScreen> {
       body: ListView(
         children: <Widget>[
           ListTile(
+            title: Text('사용자 정보'),
             leading: CircleAvatar(
               child: Icon(Icons.person),
             ),
           ),
-          Divider(),
           ListTile(
             title: Text('회원 신체 정보'),
             trailing: Icon(Icons.arrow_forward_ios),
@@ -74,6 +74,7 @@ class _MyPageScreenState extends State<MypageScreen> {
               );
             },
           ),
+          Divider(),
           ListTile(
             leading: Icon(Icons.lock), // 비밀번호 관리 아이콘
             title: Text('비밀번호 관리'),

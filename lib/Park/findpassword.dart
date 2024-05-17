@@ -267,9 +267,9 @@ class _FindPasswordState extends State<FindPassword> {
                     ),
                   ],
                 ),
+                SizedBox(height: 20.0),
                 if (_isVerificationCodeSent)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(160, 25, 160, 5),
+                  Center(
                     child: Text(
                       '남은 시간: ${_remainingTime ~/ 60}:${(_remainingTime % 60).toString().padLeft(2, '0')}',
                       style: TextStyle(fontSize: 16, color: Colors.red),

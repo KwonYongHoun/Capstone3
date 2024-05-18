@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// 왜 커밋이 안 됨????
 class MyRecordMachineRecord extends StatefulWidget {
   final String exercise;
 

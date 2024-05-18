@@ -44,10 +44,10 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
               decoration: const InputDecoration(
                 hintText: '운동 시간을 입력하세요',
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue), // 기본 상태의 테두리 색
+                  borderSide: BorderSide(color: Colors.green), // 기본 상태의 테두리 색
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue), // 선택된 상태의 테두리 색
+                  borderSide: BorderSide(color: Colors.green), // 선택된 상태의 테두리 색
                 ),
               ),
             ),
@@ -65,6 +65,11 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
               },
             ),
             const SizedBox(height: 16),
+            const Text(
+              '상세 기록', // '상세 기록' 제목 추가
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8), // '상세 기록' 제목과 버튼 사이에 간격 추가
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -75,7 +80,7 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                side: const BorderSide(color: Colors.blue), // 테두리 색상을 파란색으로 설정
+                side: const BorderSide(color: Colors.green), // 테두리 색상을 파란색으로 설정
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20), // 버튼 모양을 동그란 형태로 설정
                 ),
@@ -197,7 +202,7 @@ class _ExerciseIntensitySelectorState extends State<ExerciseIntensitySelector> {
       child: Text(intensity),
       style: ElevatedButton.styleFrom(
         backgroundColor: _selectedIntensity == intensity
-            ? Colors.blue
+            ? Colors.green
             : Colors.white, // 선택된 버튼의 배경색을 파란색으로 변경
         foregroundColor: _selectedIntensity == intensity
             ? Colors.white
@@ -211,21 +216,158 @@ class _ExerciseIntensitySelectorState extends State<ExerciseIntensitySelector> {
   }
 }
 
-class DetailedRecordScreen extends StatelessWidget {
+class DetailedRecordScreen extends StatefulWidget {
+  @override
+  _DetailedRecordScreenState createState() => _DetailedRecordScreenState();
+}
+
+class _DetailedRecordScreenState extends State<DetailedRecordScreen> {
+  String _selectedType = '횟수'; // 기본 선택된 타입
+
+  final List<TextEditingController> _repControllers = [];
+  final List<TextEditingController> _weightControllers = [];
+  final List<TextEditingController> _distanceControllers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // 초기 세트 데이터를 추가합니다.
+    _addSet();
+  }
+
+  void _addSet() {
+    _repControllers.add(TextEditingController());
+    _weightControllers.add(TextEditingController());
+    _distanceControllers.add(TextEditingController());
+  }
+
+  @override
+  void dispose() {
+    _repControllers.forEach((controller) => controller.dispose());
+    _weightControllers.forEach((controller) => controller.dispose());
+    _distanceControllers.forEach((controller) => controller.dispose());
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('상세 기록'),
       ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // 여기에 추가 작업 구현
-          },
-          child: const Text('기록 추가하기'),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ToggleButtons(
+              children: const [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text('횟수'),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text('무게'),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text('거리'),
+                ),
+              ],
+              isSelected: [
+                _selectedType == '횟수',
+                _selectedType == '무게',
+                _selectedType == '거리',
+              ],
+              onPressed: (int index) {
+                setState(() {
+                  if (index == 0) {
+                    _selectedType = '횟수';
+                  } else if (index == 1) {
+                    _selectedType = '무게';
+                  } else if (index == 2) {
+                    _selectedType = '거리';
+                  }
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            _buildInputForm(),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _addSet,
+              child: const Text('세트 추가하기'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // 여기에 저장 작업 구현
+              },
+              child: const Text('기록 저장'),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildInputForm() {
+    List<Widget> formFields = [];
+    for (int i = 0; i < _repControllers.length; i++) {
+      formFields.add(Row(
+        children: [
+          Text('세트 ${i + 1}'),
+          const SizedBox(width: 16),
+          if (_selectedType == '횟수')
+            Expanded(
+              child: TextFormField(
+                controller: _repControllers[i],
+                decoration: const InputDecoration(
+                  labelText: '횟수',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+          if (_selectedType == '무게') ...[
+            Expanded(
+              child: TextFormField(
+                controller: _weightControllers[i],
+                decoration: const InputDecoration(
+                  labelText: 'kg',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: TextFormField(
+                controller: _repControllers[i],
+                decoration: const InputDecoration(
+                  labelText: '횟수',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+          ],
+          if (_selectedType == '거리')
+            Expanded(
+              child: TextFormField(
+                controller: _distanceControllers[i],
+                decoration: const InputDecoration(
+                  labelText: 'km',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+        ],
+      ));
+      formFields.add(const SizedBox(height: 16));
+    }
+    return Column(children: formFields);
   }
 }

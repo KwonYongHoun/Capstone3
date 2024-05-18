@@ -13,6 +13,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   String errorMessage = '';
   bool _isPasswordVisible = false;
+  bool _isAutoLogin = false; // 자동 로그인 상태 변수
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +105,46 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        unselectedWidgetColor: Color.fromARGB(
+                            255, 214, 214, 214), // 체크되지 않은 상태의 색상
+                        checkboxTheme: CheckboxThemeData(
+                          fillColor: MaterialStateProperty.resolveWith<Color>(
+                            (Set<MaterialState> states) {
+                              if (states.contains(MaterialState.selected)) {
+                                return Colors.green; // 체크된 상태의 색상
+                              }
+                              return Color.fromARGB(
+                                  255, 214, 214, 214); // 체크되지 않은 상태의 색상
+                            },
+                          ),
+                          checkColor: MaterialStateProperty.resolveWith<Color>(
+                            (Set<MaterialState> states) {
+                              if (states.contains(MaterialState.selected)) {
+                                return Colors.white; // 체크된 상태의 체크 표시 색상
+                              }
+                              return const Color.fromARGB(
+                                  255, 209, 209, 209); // 체크되지 않은 상태의 체크 표시 색상
+                            },
+                          ),
+                        ),
+                      ),
+                      child: Checkbox(
+                        value: _isAutoLogin,
+                        onChanged: (newValue) {
+                          setState(() {
+                            _isAutoLogin = newValue!;
+                          });
+                        },
+                      ),
+                    ),
+                    Text("자동 로그인"),
+                  ],
                 ),
                 SizedBox(height: 40),
                 Center(

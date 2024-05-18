@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -36,6 +37,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 230,
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 2),
+                    image: DecorationImage(
+                      image: AssetImage('../assets/QR.png'), // 경로에 이미지를 넣습니다.
+                      fit: BoxFit.cover, // 이미지를 꽉 채웁니다.
+                    ),
                   ),
                 ),
                 Text(

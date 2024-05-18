@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:health/Kim/exercise/exercise_guide.dart';
 import 'package:health/Kim/record/myrecord_page.dart';
 import 'mypagescreen.dart';
@@ -71,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Divider(
             // 수평 선
             height: 30,
-            color: Colors.grey[400],
+            color: Colors.grey[200],
           ),
           Expanded(
             child: _children[_currentIndex],
@@ -82,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: onTabTapped,
-        selectedItemColor: Colors.black,
+        selectedItemColor: Colors.lightGreen,
         unselectedItemColor: Colors.grey,
         selectedLabelStyle: TextStyle(
           fontWeight: FontWeight.bold,
@@ -94,23 +95,23 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.group),
+            icon: Icon(FontAwesomeIcons.userGroup),
             label: '커뮤니티',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center),
+            icon: Icon(FontAwesomeIcons.dumbbell),
             label: '운동기구',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(FontAwesomeIcons.home),
             label: '홈',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.date_range),
+            icon: Icon(FontAwesomeIcons.chartLine),
             label: '운동기록',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(FontAwesomeIcons.user),
             label: '마이페이지',
           ),
         ],

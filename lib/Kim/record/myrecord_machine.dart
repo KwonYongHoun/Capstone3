@@ -43,19 +43,33 @@ class MyRecordMachinePage extends StatelessWidget {
           '어시스트 딥스 머신',
           '시티드 체스트 프레스',
           '푸시업',
-          '체스트 프레스 머신',
-          '숄더 프레스 머신'
+          '힌두 푸시업',
+          '클랩 푸시업',
+          '덤벨 스퀴즈 프레스'
         ];
         break;
       case '어깨':
-        machines = ['숄더 프레스', '레터럴 레이즈', '페이스 풀', '숄더 쉬러그'];
+        machines = [
+          '체스트 프레스 머신',
+          '숄더 프레스 머신',
+          '오버헤드 프레스',
+          '덤벨 숄더 프레스',
+          '덤벨 프론트 프레스',
+          '덤벨 레터럴 프레스',
+          '핸드스탠드',
+          '숄더 탭',
+          '플레이트 숄더 프레스',
+          'Y 레이즈'
+        ];
         break;
       case '하체':
         machines = [
           '레그 익스텐션',
           '레그 컬',
+          '레그 프레스',
           '힙 어브덕션 머신',
           '브이 스쿼트',
+          '런지 트위스트',
           '덩키 킥',
           '힙 쓰러스트',
           '글루트 브릿지',
@@ -63,10 +77,32 @@ class MyRecordMachinePage extends StatelessWidget {
         ];
         break;
       case '팔':
-        machines = ['덤벨 컬', '바벨 컬', '이지바 컬', '덤벨 해머 컬', '벤치 딥스'];
+        machines = [
+          '덤벨 컬',
+          '바벨 컬',
+          '이지바 컬',
+          '덤벨 해머 컬',
+          '벤치 딥스',
+          '덤벨 리스트 컬',
+          '이지바 리스트 컬',
+          '바벨 리스트 컬',
+          '덤벨 킥백',
+          '덤벨 트라이셉 익스텐션'
+        ];
         break;
       case '등':
-        machines = ['랫풀다운', '시티드 케이블 로우', '씨티드 로우', '랫풀다운', '랫풀다운(머신)'];
+        machines = [
+          '랫풀다운',
+          '시티드 케이블 로우',
+          '풀업',
+          '중량 풀업',
+          '덤벨 로우',
+          '라잉 바벨 로우',
+          '언더그립 바벨 로우',
+          '정지 바벨 로우',
+          '바벨 풀오버',
+          '백 익스텐션'
+        ];
         break;
       case '복근':
         machines = [
@@ -137,7 +173,7 @@ class MyRecordMachinePage extends StatelessWidget {
         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8), // 버튼의 모서리를 둥글게 설정
-            side: const BorderSide(color: Colors.grey), // 버튼의 테두리를 회색으로 설정
+            side: const BorderSide(color: Colors.blue), // 버튼의 테두리를 회색으로 설정
           ),
         ),
       ),

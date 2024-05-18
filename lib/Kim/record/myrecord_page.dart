@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:health/Kim/record/myrecord_statistic.dart'; // myrecord_machine.dart 파일을 임포트해야 합니다.
+import 'package:health/Kim/record/myrecord_statistic.dart'; // myrecord_statistic.dart 파일을 임포트해야 합니다.
 import 'package:health/Kim/record/myrecord_machine.dart';
 
 class MyRecordPage extends StatelessWidget {
@@ -11,7 +11,24 @@ class MyRecordPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('나의 운동 기록'),
+        title: Row(
+          mainAxisAlignment:
+              MainAxisAlignment.spaceBetween, // 아이콘과 텍스트를 각각 양쪽 끝에 배치
+          children: [
+            const Text('나의 운동 기록'),
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyRecordStatisticPage(), // 통계 페이지로 이동
+                  ),
+                );
+              },
+              icon: Icon(Icons.bar_chart), // 아이콘 추가
+            ),
+          ],
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -88,7 +105,7 @@ class MyRecordPage extends StatelessWidget {
           backgroundColor: Colors.white, // 배경색을 하얀색으로 설정
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
-            side: const BorderSide(color: Colors.grey), // 테두리를 회색으로 설정
+            side: const BorderSide(color: Colors.blue), // 테두리를 회색으로 설정
           ),
         ),
         child: Text(

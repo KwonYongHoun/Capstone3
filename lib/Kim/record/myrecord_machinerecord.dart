@@ -40,7 +40,12 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
             TextFormField(
               decoration: const InputDecoration(
                 hintText: '운동 시간을 입력하세요',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue), // 기본 상태의 테두리 색
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue), // 선택된 상태의 테두리 색
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -130,7 +135,7 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
                       });
 
                       // 2초 후에 '저장 되었습니다' 문구를 숨깁니다.
-                      Future.delayed(Duration(seconds: 2), () {
+                      Future.delayed(const Duration(seconds: 2), () {
                         setState(() {
                           _isSaved = false;
                         });
@@ -182,9 +187,11 @@ class _ExerciseIntensitySelectorState extends State<ExerciseIntensitySelector> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildIntensityButton('가볍게'),
-        _buildIntensityButton('적당히'),
-        _buildIntensityButton('격하게'),
+        Expanded(child: _buildIntensityButton('가볍게')),
+        const SizedBox(width: 8),
+        Expanded(child: _buildIntensityButton('적당히')),
+        const SizedBox(width: 8),
+        Expanded(child: _buildIntensityButton('격하게')),
       ],
     );
   }
@@ -201,7 +208,11 @@ class _ExerciseIntensitySelectorState extends State<ExerciseIntensitySelector> {
       style: ElevatedButton.styleFrom(
         backgroundColor: _selectedIntensity == intensity
             ? Colors.blue
-            : null, // 버튼의 배경색을 변경합니다.
+            : Colors.white, // 선택된 버튼의 배경색을 파란색으로 변경
+        foregroundColor: _selectedIntensity == intensity
+            ? Colors.white
+            : Colors.black, // 선택된 버튼의 텍스트 색상을 흰색으로 변경
+        side: const BorderSide(color: Colors.blue), // 테두리를 파란색으로 설정
       ),
     );
   }

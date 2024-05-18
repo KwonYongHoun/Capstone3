@@ -13,6 +13,8 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
   List<SetData> sets = [];
   bool _isSaved = false;
   String _selectedIntensity = ''; // 운동 강도를 저장할 변수
+  final _exerciseTimeController =
+      TextEditingController(); // 운동 시간을 입력 받을 컨트롤러 생성
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
             ),
             const SizedBox(height: 8),
             TextFormField(
+              controller: _exerciseTimeController, // controller 할당
               decoration: const InputDecoration(
                 hintText: '운동 시간을 입력하세요',
                 border: OutlineInputBorder(
@@ -62,53 +65,38 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
               },
             ),
             const SizedBox(height: 16),
-            const Text(
-              '상세 기록',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: sets.length,
-              itemBuilder: (context, index) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '세트 ${index + 1}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                          hintText: 'kg',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                          hintText: '횟수',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                          hintText: 'km',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ],
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DetailedRecordScreen(),
+                  ),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                side: const BorderSide(color: Colors.blue), // 테두리 색상을 파란색으로 설정
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20), // 버튼 모양을 동그란 형태로 설정
+                ),
+                elevation: 0, // 그림자를 없애기 위해 elevation을 0으로 설정
+                padding: EdgeInsets.zero, // 내부 패딩을 없애기 위해 padding을 0으로 설정
+              ).copyWith(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Colors.white), // 버튼의 배경색을 하얀색으로 설정
+                foregroundColor: MaterialStateProperty.all<Color>(
+                    Colors.black), // 텍스트 색상을 검정색으로 설정
+              ),
+              child: Container(
+                alignment: Alignment.center, // 텍스트를 버튼 가운데 정렬
+                padding: const EdgeInsets.all(12.0), // 버튼 내부 패딩 추가
+                child: const Text(
+                  '상세 기록',
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Center(
@@ -128,6 +116,8 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
                     onPressed: () {
                       // 추가하기 버튼 클릭 시
                       // 여기에 추가 작업 구현
+                      //DatabaseManager().insertRecord(_exerciseTimeController
+                      //  .text); // 입력된 운동 시간을 데이터베이스에 저장
 
                       // '기록 저장'을 눌렀을 때 '저장 되었습니다' 문구를 보여줍니다.
                       setState(() {
@@ -213,6 +203,28 @@ class _ExerciseIntensitySelectorState extends State<ExerciseIntensitySelector> {
             ? Colors.white
             : Colors.black, // 선택된 버튼의 텍스트 색상을 흰색으로 변경
         side: const BorderSide(color: Colors.blue), // 테두리를 파란색으로 설정
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20), // 버튼 모양을 동그란 형태로 설정
+        ),
+      ),
+    );
+  }
+}
+
+class DetailedRecordScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('상세 기록'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // 여기에 추가 작업 구현
+          },
+          child: const Text('기록 추가하기'),
+        ),
       ),
     );
   }

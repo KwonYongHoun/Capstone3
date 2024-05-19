@@ -47,19 +47,40 @@ class DatabaseHelper {
         ''');
 
         // 데이터베이스가 생성될 때 게시물 데이터를 넣습니다.
-        await db.insert(
-          tableName,
-          Commu(
-            postID: 1,
-            fk_memberNumber: 1,
-            type: 'Example Type',
-            content: 'Example Content',
-            createdAt: DateTime.now(),
-          ).toMap(),
-        );
+        await _insertInitialData(db);
       },
       version: 1,
     );
+  }
+
+  static Future<void> _insertInitialData(Database db) async {
+    List<Commu> initialPosts = [
+      Commu(
+        postID: 1,
+        fk_memberNumber: 1,
+        type: '자유게시판',
+        content: '첫 번째 게시물 내용입니다.',
+        createdAt: DateTime.now(),
+      ),
+      Commu(
+        postID: 2,
+        fk_memberNumber: 2,
+        type: '헬스 파트너 찾기',
+        content: '두 번째 게시물 내용입니다.',
+        createdAt: DateTime.now(),
+      ),
+      Commu(
+        postID: 3,
+        fk_memberNumber: 3,
+        type: '운동 고민 게시판',
+        content: '세 번째 게시물 내용입니다.',
+        createdAt: DateTime.now(),
+      ),
+    ];
+
+    for (var post in initialPosts) {
+      await db.insert(tableName, post.toMap());
+    }
   }
 
   static Future<void> insertPost(Commu post) async {

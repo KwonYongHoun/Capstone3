@@ -236,6 +236,18 @@
       "languageVersion": "3.3"
     },
     {
+      "name": "sqflite_common_ffi",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/sqflite_common_ffi-2.3.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "sqlite3",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/sqlite3-2.4.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
       "name": "stack_trace",
       "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/stack_trace-1.11.1",
       "packageUri": "lib/",
@@ -362,7 +374,7 @@
       "languageVersion": "3.3"
     }
   ],
-  "generated": "2024-05-07T01:48:13.578552Z",
+  "generated": "2024-05-19T12:42:18.453805Z",
   "generator": "pub",
   "generatorVersion": "3.3.1"
 }

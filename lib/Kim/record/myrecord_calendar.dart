@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:health/Kim/record/myrecord_page.dart';
+import 'package:health/Kim/record/myrecord_statistic.dart';
+// myhomepage.dart에서 'package/record/myrecord_page.dart'가 아니라 'package/record/calendar.dart'로 바꿔야함
+
+// 문제: 현재 달이 아닌 다른 달의 날짜를 선택하려고 하면 선택이 되지 않고 현재의 달로 되돌아옴
+void main() {
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -21,15 +28,14 @@ class MyrecordCalendarPage extends StatefulWidget {
   const MyrecordCalendarPage({Key? key}) : super(key: key);
 
   @override
-  _MyrecordCalendarPageState createState() =>
-      _MyrecordCalendarPageState(); // 변경된 부분
+  _MyrecordCalendarPageState createState() => _MyrecordCalendarPageState();
 }
 
 class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
-  // 변경된 부분
   late DateTime _selectedDay;
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
+  int _currentIndex = 2; // Default index is 2 for '홈'
 
   @override
   void initState() {
@@ -45,6 +51,20 @@ class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('나의 운동 기록'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MyRecordStatisticPage(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.bar_chart), // '통계' 아이콘
+            tooltip: '통계', // 아이콘 툴팁
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -66,35 +86,57 @@ class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
                 _focusedDay = focusedDay;
               });
             },
+            calendarStyle: CalendarStyle(
+              todayDecoration: const BoxDecoration(),
+              defaultTextStyle: const TextStyle(color: Colors.black),
+              outsideTextStyle: const TextStyle(color: Colors.black),
+              todayTextStyle:
+                  const TextStyle(color: Colors.green), // 오늘 날짜의 글씨색을 초록색으로 설정
+              selectedDecoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.transparent,
+                border: Border.all(
+                    color: Colors.green, width: 1.5), // 선택된 날짜의 테두리를 초록색으로 설정
+              ),
+              selectedTextStyle: const TextStyle(
+                  color: Colors.black), // 선택된 날짜의 텍스트 색상을 검정색으로 설정
+            ),
+            daysOfWeekStyle: const DaysOfWeekStyle(
+              weekendStyle: TextStyle(color: Colors.red),
+              weekdayStyle: TextStyle(color: Colors.black),
+            ),
           ),
+          const SizedBox(height: 16),
+          const Divider(),
           ElevatedButton(
             onPressed: () {
-              // '나의 운동 기록 추가하기' 버튼을 눌렀을 때 처리할 작업 작성
-              // 예를 들어, 다른 페이지로 이동하는 코드를 작성할 수 있습니다.
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => MyRecodePage()),
+                MaterialPageRoute(
+                  builder: (context) =>
+                      MyRecordPage(selectedDate: _selectedDay),
+                ),
               );
             },
-            child: const Text('나의 운동 기록 추가하기'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                  vertical: 12, horizontal: 24), // 버튼 내부 padding 설정
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10), // 버튼의 모서리를 둥글게 설정
+                side: const BorderSide(
+                    color: Colors.green, width: 2), // 버튼의 테두리 설정
+              ),
+            ),
+            child: const Text(
+              '나의 운동 기록 추가하기',
+              style: TextStyle(
+                color: Colors.green, // 텍스트 색상을 초록색으로 설정
+                fontWeight: FontWeight.bold, // 텍스트 굵기를 굵게 설정
+              ),
+            ), // 버튼 텍스트 설정
           ),
         ],
-      ),
-    );
-  }
-}
-
-class AddExerciseRecordPage extends StatelessWidget {
-  const AddExerciseRecordPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('운동 기록 추가'),
-      ),
-      body: const Center(
-        child: Text('운동 기록 추가 화면'),
       ),
     );
   }

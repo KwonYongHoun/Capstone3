@@ -1,77 +1,122 @@
-// 운동 기록 추가하기 버튼과 달력의 날짜를 눌렀을 때 나오는 창
 import 'package:flutter/material.dart';
+import 'package:health/Kim/record/myrecord_statistic.dart'; // myrecord_statistic.dart 파일을 임포트해야 합니다.
+import 'package:health/Kim/record/myrecord_machine.dart';
 
-class MyRecodePage extends StatelessWidget {
+class MyRecordPage extends StatelessWidget {
+  final DateTime selectedDate;
+
+  const MyRecordPage({Key? key, required this.selectedDate}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('나의 운동 기록'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        title: Row(
+          mainAxisAlignment:
+              MainAxisAlignment.spaceBetween, // 아이콘과 텍스트를 각각 양쪽 끝에 배치
+          children: [
+            const Text('나의 운동 기록'),
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyRecordStatisticPage(), // 통계 페이지로 이동
+                  ),
+                );
+              },
+              icon: Icon(Icons.bar_chart), // 아이콘 추가
+            ),
+          ],
         ),
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 16),
+          Text(
+            '${selectedDate.month}월 ${selectedDate.day}일',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          const SizedBox(height: 16),
           const Text(
-            '오늘의 운동 시간',
-            style: TextStyle(fontSize: 24),
+            '실제 운동한 시간',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
           const Text(
-            '00:00', // 여기에 실제 운동 시간 데이터를 표시하도록 변경해야 합니다.
-            style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+            '운동 시작 시간 - 운동 종료 시간',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 16),
+          const SizedBox(height: 5), // '운동 부위'와 버튼 사이의 간격 조절
           const Text(
-            '운동 부위',
-            style: TextStyle(fontSize: 20),
+            '운동 부위\n',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 2),
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              children: List.generate(
-                8,
-                (index) => GestureDetector(
-                  onTap: () {
-                    // 운동 부위 카테고리를 눌렀을 때의 동작 작성
-                    // 해당 카테고리에 해당하는 운동 종류를 표시하거나, 다음 단계로 넘어가는 등의 동작을 수행합니다.
-                  },
-                  child: Card(
-                    elevation: 3,
-                    child: Center(
-                      child: Text(
-                        '운동 부위 ${index + 1}',
-                        style: const TextStyle(fontSize: 18.0),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0),
-            child: TextField(
-              decoration: InputDecoration(
-                labelText: '운동 시간 입력', // 입력 필드 위에 표시될 라벨
-                border: OutlineInputBorder(), // 입력 필드 주변의 경계선 스타일
-              ),
-              keyboardType: TextInputType.number, // 숫자만 입력 가능하도록 키보드를 설정
-              textAlign: TextAlign.center, // 입력된 텍스트를 가운데 정렬
-            ),
+          GridView.count(
+            crossAxisCount: 4,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 2.5,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            children: [
+              _buildExerciseButton(context, '가슴'),
+              _buildExerciseButton(context, '어깨'),
+              _buildExerciseButton(context, '하체'),
+              _buildExerciseButton(context, '팔'),
+              _buildExerciseButton(context, '등'),
+              _buildExerciseButton(context, '복근'),
+              _buildExerciseButton(context, '유산소'),
+              _buildExerciseButton(context, '기타'),
+            ],
           ),
         ],
       ),
     );
   }
+
+  Widget _buildExerciseButton(BuildContext context, String text) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MyRecordMachinePage(
+                exercise: text,
+              ),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white, // 배경색을 하얀색으로 설정
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            side: const BorderSide(color: Colors.blue), // 테두리를 회색으로 설정
+          ),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Colors.black, // 글꼴색을 검은색으로 설정
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
 }
-
-// 운동 시간 받아서 저장하는 데이터 필요함
-

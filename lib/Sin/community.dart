@@ -1,43 +1,52 @@
 import 'package:flutter/material.dart';
-import 'fBoard.dart'; // fBoard 페이지를 import
+import 'posts_list.dart'; // PostsListPage import
 
 class CommunityPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            print('메뉴바 아이콘을 눌렀을 때의 기능 추가');
-          },
-        ),
-        title: Text('커뮤니티', style: TextStyle(fontSize: 20)),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0), // 상단바 높이 조절
+        child: AppBar(
+          title: Padding(
+            padding: const EdgeInsets.only(top: 0.0), // 상단 여백 추가
+            child: Text(
+              '커뮤니티',
+              style: TextStyle(fontSize: 20),
+            ),
+          ),
+          leading: IconButton(
+            icon: Icon(Icons.menu),
             onPressed: () {
-              print('검색 기능 추가');
+              print('메뉴바 아이콘을 눌렀을 때의 기능 추가');
             },
           ),
-          IconButton(
-            icon: Icon(Icons.account_circle),
-            onPressed: () {
-              print('마이페이지로 이동');
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.bookmark),
-            onPressed: () {
-              print('스크랩 게시물 페이지로 이동');
-            },
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(1), // 선의 높이
-          child: Divider(
-            color: Colors.grey, // 선의 색상
-            height: 0, // 선의 높이
+          actions: [
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                print('검색 기능 추가');
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.account_circle),
+              onPressed: () {
+                print('마이페이지로 이동');
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.bookmark),
+              onPressed: () {
+                print('스크랩 게시물 페이지로 이동');
+              },
+            ),
+          ],
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(1), // 선의 높이
+            child: Divider(
+              color: Colors.grey, // 선의 색상
+              height: 10, // 선의 높이
+            ),
           ),
         ),
       ),
@@ -49,46 +58,36 @@ class CommunityPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => FBoardPage()), // fBoard 페이지로 이동
+                    builder: (context) =>
+                        PostsListPage(boardType: '자유게시판')), // PostsListPage로 이동
               );
             }),
             _buildBoardButton(context, "헬스 파트너 찾기", 'assets/images/b.b_2.png',
                 () {
-              // 다른 보드를 눌렀을 때의 동작 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        PostsListPage(boardType: '헬스 파트너 찾기')),
+              );
             }),
             _buildBoardButton(context, "운동 고민 게시판", 'assets/images/b.b_3.png',
                 () {
-              // 다른 보드를 눌렀을 때의 동작 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        PostsListPage(boardType: '운동 고민 게시판')),
+              );
             }),
             _buildBoardButton(context, "식단공유 게시판", 'assets/images/b.b_4.png',
                 () {
-              // 다른 보드를 눌렀을 때의 동작 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => PostsListPage(boardType: '식단공유 게시판')),
+              );
             }),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.insert_chart),
-              onPressed: () {
-                print('통계 페이지로 이동');
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                print('홈 페이지로 이동');
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.account_circle),
-              onPressed: () {
-                print('마이페이지로 이동');
-              },
-            ),
           ],
         ),
       ),

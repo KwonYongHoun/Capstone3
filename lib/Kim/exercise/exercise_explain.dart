@@ -65,7 +65,15 @@ class ExerciseExplainPage extends StatelessWidget {
             onPressed: () {
               _launchURL(context, url);
             },
-            child: const Text('영상 보기'),
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(
+                  Colors.white), // 버튼의 배경색을 하얀색으로 지정
+              foregroundColor: MaterialStateProperty.all<Color>(
+                  Colors.green), // 버튼의 텍스트 색상을 연두색으로 지정
+              side: MaterialStateProperty.all<BorderSide>(
+                  const BorderSide(color: Colors.green)), // 버튼의 테두리를 연두색으로 지정
+            ),
+            child: const Text('유튜브 검색'),
           ),
         ],
       ),

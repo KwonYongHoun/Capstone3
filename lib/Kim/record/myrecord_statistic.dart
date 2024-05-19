@@ -19,13 +19,13 @@ class _MyRecordStatisticPageState extends State<MyRecordStatisticPage> {
   };
 
   // 날짜 데이터
-  final List<String> _dates = ['1일', '2일', '3일', '4일', '5일', '6일', '7일'];
+  final List<String> _dates = ['일', '월', '화', '수', '목', '금', '토'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('운동 통계'),
+        title: const Text('통계'),
       ),
       body: Column(
         children: [
@@ -38,20 +38,9 @@ class _MyRecordStatisticPageState extends State<MyRecordStatisticPage> {
             ],
           ),
           Expanded(
-            child: Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    '운동 시간 (시간)',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                if (_selectedPeriod == '일간') // '일간' 버튼이 선택되었을 때만 그래프를 표시합니다.
-                  Expanded(
-                    child: _buildStatisticContent(),
-                  ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: _buildStatisticContent(),
             ),
           ),
         ],
@@ -81,74 +70,73 @@ class _MyRecordStatisticPageState extends State<MyRecordStatisticPage> {
   }
 
   Widget _buildStatisticContent() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(show: true),
-          titlesData: FlTitlesData(
-            bottomTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 22,
-              getTextStyles: (value) => const TextStyle(
-                color: Color(0xff7589a2),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-              getTitles: (value) {
-                return _dates[value.toInt()];
-              },
-              margin: 8,
+    // 선택된 기간에 해당하는 운동 데이터
+    final List<double>? exerciseData = _exerciseData[_selectedPeriod];
+
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(show: true),
+        titlesData: FlTitlesData(
+          bottomTitles: SideTitles(
+            showTitles: true,
+            getTextStyles: (value) => const TextStyle(
+              color: Color(0xff7589a2),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
             ),
-            leftTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 28,
-              getTextStyles: (value) => const TextStyle(
-                color: Color(0xff7589a2),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-              getTitles: (value) {
-                // 60분 단위로 표시
-                return '${(value.toInt() * 60 / 60).toStringAsFixed(1)}'; // 분을 시간으로 변경
-              },
-              margin: 12,
-            ),
-            topTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 22,
-              getTextStyles: (value) => const TextStyle(
-                color: Color(0xff7589a2),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-              getTitles: (value) {
-                return '(시간)';
-              },
-              margin: 8,
-            ),
+            getTitles: (value) {
+              // 실제 날짜 수에 따라 동적으로 반환
+              if (exerciseData != null && value.toInt() < exerciseData.length) {
+                return _dates[value.toInt()]; // 날짜 표시
+              }
+              return '';
+            },
+            margin: 8,
           ),
-          borderData: FlBorderData(show: true),
-          minX: 0,
-          maxX: 6,
-          minY: 0,
-          maxY: 5, // 5시간
-          lineBarsData: [
-            LineChartBarData(
-              spots: _exerciseData[_selectedPeriod]!
-                  .asMap()
-                  .entries
-                  .map((e) => FlSpot(e.key.toDouble(), e.value))
-                  .toList(),
-              isCurved: true,
-              colors: [Colors.blue],
-              barWidth: 4,
-              isStrokeCapRound: true,
-              dotData: FlDotData(show: true),
-              belowBarData: BarAreaData(show: false),
+          leftTitles: SideTitles(
+            showTitles: false, // 세로축 숫자 표시 비활성화
+          ),
+          topTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 22,
+            getTextStyles: (value) => const TextStyle(
+              color: Color(0xff7589a2),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
             ),
-          ],
+            getTitles: (value) {
+              if (value == 0) {
+                return '(시간)';
+              } else {
+                return '';
+              }
+            },
+            margin: 8,
+          ),
         ),
+        borderData: FlBorderData(show: true),
+        minX: 0,
+        // 선택된 기간에 따라 최대 X값을 설정
+        maxX: exerciseData != null ? exerciseData.length.toDouble() - 1 : 6,
+        minY: 0,
+        maxY: 5, // 5시간
+        lineBarsData: [
+          LineChartBarData(
+            spots: exerciseData != null
+                ? exerciseData
+                    .asMap()
+                    .entries
+                    .map((e) => FlSpot(e.key.toDouble(), e.value))
+                    .toList()
+                : [],
+            isCurved: true,
+            colors: [Colors.blue],
+            barWidth: 4,
+            isStrokeCapRound: true,
+            dotData: FlDotData(show: true),
+            belowBarData: BarAreaData(show: false),
+          ),
+        ],
       ),
     );
   }

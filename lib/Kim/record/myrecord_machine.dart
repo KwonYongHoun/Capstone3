@@ -173,7 +173,7 @@ class MyRecordMachinePage extends StatelessWidget {
         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8), // 버튼의 모서리를 둥글게 설정
-            side: const BorderSide(color: Colors.blue), // 버튼의 테두리를 회색으로 설정
+            side: const BorderSide(color: Colors.green), // 버튼의 테두리를 회색으로 설정
           ),
         ),
       ),

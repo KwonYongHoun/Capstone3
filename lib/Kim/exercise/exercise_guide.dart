@@ -63,7 +63,7 @@ class ExercisePartButton extends StatelessWidget {
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
-              side: const BorderSide(color: Colors.blue), // 테두리를 회색으로 설정
+              side: const BorderSide(color: Colors.green), // 테두리를 초록으로 설정
             ),
           ),
           padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
@@ -136,7 +136,7 @@ class ExerciseEquipmentCard extends StatelessWidget {
       decoration: BoxDecoration(
         // 테두리 스타일 지정
         color: Colors.white, // 배경색을 하얀색으로 설정
-        border: Border.all(color: Colors.blue), // 테두리를 회색으로 설정
+        border: Border.all(color: Colors.green), // 테두리를 회색으로 설정
         borderRadius: BorderRadius.circular(10.0), // 테두리를 둥글게 만듦
       ),
       child: ListTile(

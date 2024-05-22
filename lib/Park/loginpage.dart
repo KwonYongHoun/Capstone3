@@ -5,8 +5,10 @@ import 'findpassword.dart';
 import '../member.dart';
 import '../Kwon/AdminMain.dart';
 
-//입력된 아이디 들고있는 변수
-String EnteredID = '';
+//입력된 아이디 비밀번호
+String enteredId = ''; //아이디
+String enteredPassword = ''; //버밀번호
+String enteredName = ''; //이름
 
 class LoginPage extends StatefulWidget {
   @override
@@ -108,8 +110,8 @@ class _LoginPageState extends State<LoginPage> {
             ElevatedButton(
               onPressed: () async {
                 // Retrieve entered ID and password
-                String enteredId = idController.text;
-                String enteredPassword = passwordController.text;
+                enteredId = idController.text;
+                enteredPassword = passwordController.text;
 
                 //관리자모드 실행 : Id admin / 비밀번호 master
                 if (enteredId == 'admin' && enteredPassword == 'master') {
@@ -120,37 +122,20 @@ class _LoginPageState extends State<LoginPage> {
                   );
                 }
 
-                if (enteredId == '1' && enteredPassword == '1') {
-                  EnteredID = enteredId;
+                // Query the database for a member with the entered ID
+                List<Member> members =
+                    await DatabaseHelper.IDCheck(enteredId, enteredPassword);
+
+                if (members.isNotEmpty) {
+                  // Login successful
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => MyHomePage()),
                   );
-                }
-
-                // Query the database for a member with the entered ID
-                List<Member> members =
-                    await DatabaseHelper.searchMembers(enteredId);
-
-                if (members.isNotEmpty) {
-                  Member member = members.first;
-                  // Compare the retrieved member's password with the entered password
-                  if (member.password.toString() == enteredPassword) {
-                    // Login successful
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MyHomePage()),
-                    );
-                  } else {
-                    // Password does not match
-                    setState(() {
-                      errorMessage = '비밀번호가 올바르지 않습니다.';
-                    });
-                  }
                 } else {
-                  // Member with the entered ID not found
+                  // Invalid ID or password
                   setState(() {
-                    errorMessage = '해당 ID가 존재하지 않습니다.';
+                    errorMessage = '아이디 또는 비밀번호가 올바르지 않습니다.';
                   });
                 }
               },

@@ -2,13 +2,13 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class Member {
-  final int memberNumber;
-  final int password;
-  final String name;
-  final String phoneNumber;
-  final DateTime registrationDate;
-  final DateTime expirationDate;
-  final String memberState;
+  final int memberNumber; //회원번호
+  final String password; //비밀번호
+  final String name; //이름
+  final String phoneNumber; //전화번호
+  final DateTime registrationDate; //등록일
+  final DateTime expirationDate; //마감일
+  final String memberState; //회원권상태: 정상/정지
 
   Member({
     required this.memberNumber,
@@ -49,19 +49,20 @@ class DatabaseHelper {
   static Future<Database> initDatabase() async {
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, dbName);
+    print('Database path: $path');
     return openDatabase(path, version: 1, onCreate: (db, version) async {
       await db.execute('''
-          CREATE TABLE $tableName(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            memberNumber INTEGER,
-            password INTEGER,
-            name TEXT,
-            phoneNumber TEXT,
-            registrationDate TEXT,
-            expirationDate TEXT,
-            memberState TEXT,
-          )
-        ''');
+        CREATE TABLE $tableName(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          memberNumber INTEGER,
+          password TEXT,
+          name TEXT,
+          phoneNumber TEXT,
+          registrationDate TEXT,
+          expirationDate TEXT,
+          memberState TEXT
+        )
+      ''');
     });
   }
 
@@ -125,7 +126,27 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> maps = await db.query(
       tableName,
       where: 'name LIKE ? OR phoneNumber LIKE ?',
-      whereArgs: ['%$searchQuery%', '%$searchQuery%'], // 검색어가 포함된 부분적인 일치 검색
+      whereArgs: ['%$searchQuery%', '%$searchQuery%'],
+    );
+    return List.generate(maps.length, (i) {
+      return Member(
+        memberNumber: maps[i]['memberNumber'],
+        password: maps[i]['password'],
+        name: maps[i]['name'],
+        phoneNumber: maps[i]['phoneNumber'],
+        registrationDate: DateTime.parse(maps[i]['registrationDate']),
+        expirationDate: DateTime.parse(maps[i]['expirationDate']),
+        memberState: maps[i]['memberState'],
+      );
+    });
+  }
+
+  static Future<List<Member>> IDCheck(String id, String password) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableName,
+      where: 'memberNumber = ? AND password = ?',
+      whereArgs: [id, password],
     );
     return List.generate(maps.length, (i) {
       return Member(

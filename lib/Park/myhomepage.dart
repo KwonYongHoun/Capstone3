@@ -23,7 +23,7 @@ class _MyHomePageState extends State<MyHomePage> {
     CommunityPage(),
     ExerciseGuidePage(),
     HomeScreen(),
-    MyRecodePage(),
+    MyRecordPage(selectedDate: DateTime.now()),
     MypageScreen(),
     FindId(),
     FindPassword(),
@@ -40,37 +40,40 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        elevation: 0.0,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Image.asset(
-              'assets/sku.jpeg', // 로고 이미지 경로
-              height: 30, // 이미지 높이
-              width: 50, // 이미지 너비
-              fit: BoxFit.contain, // 이미지 채우기 옵션
-            ),
-            SizedBox(width: 5),
-            Text(
-              '헬스타임',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                fontStyle: FontStyle.italic, // 텍스트를 기울임
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(40.0), // 상단바 높이 조절
+        child: AppBar(
+          backgroundColor: Colors.white,
+          automaticallyImplyLeading: false,
+          elevation: 0.0,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Image.asset(
+                'assets/images/sku.jpeg', // 로고 이미지 경로
+                height: 30, // 이미지 높이 조절
+                width: 50, // 이미지 너비 조절
+                fit: BoxFit.contain, // 이미지 채우기 옵션
               ),
-            ),
-          ],
+              SizedBox(width: 5),
+              Text(
+                '헬스타임',
+                style: TextStyle(
+                  fontSize: 24, // 텍스트 크기 조절
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontStyle: FontStyle.italic, // 텍스트를 기울임
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: Column(
         children: [
           Divider(
             // 수평 선
-            height: 30,
+            height: 20,
             color: Colors.grey[400],
           ),
           Expanded(

@@ -32,49 +32,80 @@ class _PostsListPageState extends State<PostsListPage> {
     });
   }
 
+  DecorationImage _getBackgroundImage(String boardType) {
+    switch (boardType) {
+      case '자유게시판':
+        return DecorationImage(
+          image: AssetImage('assets/images/001.png'),
+          fit: BoxFit.cover,
+        );
+      case '헬스 파트너 찾기':
+        return DecorationImage(
+          image: AssetImage('assets/images/002.png'),
+          fit: BoxFit.cover,
+        );
+      case '운동 고민 게시판':
+        return DecorationImage(
+          image: AssetImage('assets/images/003.png'),
+          fit: BoxFit.cover,
+        );
+      default:
+        return DecorationImage(
+          image: AssetImage('assets/images/004.png'),
+          fit: BoxFit.cover,
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.boardType),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: FutureBuilder<List<Commu>>(
-              future: _postsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No posts available.'));
-                } else {
-                  final posts = snapshot.data!;
-                  return ListView.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) {
-                      final post = posts[index];
-                      return Column(
-                        children: [
-                          PostWidget(
-                            post: post,
-                            onPostUpdated: _refreshPosts,
-                          ),
-                          Divider(
-                            color: Colors.grey, // 선의 색상
-                            height: 10, // 선의 높이
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
-              },
+      body: Container(
+        decoration: BoxDecoration(
+          image: _getBackgroundImage(widget.boardType),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: FutureBuilder<List<Commu>>(
+                future: _postsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('No posts available.'));
+                  } else {
+                    final posts = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: posts.length,
+                      itemBuilder: (context, index) {
+                        final post = posts[index];
+                        return Column(
+                          children: [
+                            PostWidget(
+                              post: post,
+                              onPostUpdated: _refreshPosts,
+                            ),
+                            Divider(
+                              color:
+                                  Color.fromARGB(255, 255, 255, 255), // 선의 색상
+                              height: 10, // 선의 높이
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -88,7 +119,7 @@ class _PostsListPageState extends State<PostsListPage> {
           });
         },
         child: Icon(Icons.create), // 연필 아이콘
-        backgroundColor: Colors.lightBlue,
+        backgroundColor: const Color.fromARGB(255, 241, 249, 253),
       ),
     );
   }
@@ -125,10 +156,11 @@ class PostWidget extends StatelessWidget {
       },
       child: Container(
         padding: EdgeInsets.all(10),
-        margin: EdgeInsets.symmetric(vertical: 5),
+        margin: EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(10),
+          color: Color.fromARGB(255, 253, 253, 253), // 배경색을 흰색으로 설정
+          border: Border.all(color: Color.fromARGB(255, 221, 220, 220)),
+          borderRadius: BorderRadius.circular(0),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

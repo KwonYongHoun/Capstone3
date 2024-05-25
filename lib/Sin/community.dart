@@ -1,52 +1,53 @@
 import 'package:flutter/material.dart';
-import 'posts_list.dart'; // PostsListPage import
+import 'package:health/Sin/Commu.dart';
+import 'posts_list.dart';
+import 'search.dart'; // CustomSearchDelegate import
 
 class CommunityPage extends StatelessWidget {
+  final List<Commu> allPosts; // 모든 게시물 리스트
+
+  CommunityPage({required this.allPosts});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(50.0), // 상단바 높이 조절
+        preferredSize: Size.fromHeight(50.0),
         child: AppBar(
-          title: Padding(
-            padding: const EdgeInsets.only(top: 0.0), // 상단 여백 추가
-            child: Text(
-              '커뮤니티',
-              style: TextStyle(fontSize: 20),
-            ),
-          ),
-          leading: IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {
-              print('메뉴바 아이콘을 눌렀을 때의 기능 추가');
-            },
-          ),
+          leading: Container(),
           actions: [
             IconButton(
               icon: Icon(Icons.search),
               onPressed: () {
-                print('검색 기능 추가');
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.account_circle),
-              onPressed: () {
-                print('마이페이지로 이동');
+                showSearch(
+                  context: context,
+                  delegate:
+                      CustomSearchDelegate(allPosts.isNotEmpty ? allPosts : []),
+                );
               },
             ),
             IconButton(
               icon: Icon(Icons.bookmark),
               onPressed: () {
-                print('스크랩 게시물 페이지로 이동');
+                // 스크랩 기능 추가
               },
             ),
           ],
           bottom: PreferredSize(
-            preferredSize: Size.fromHeight(1), // 선의 높이
+            preferredSize: Size.fromHeight(1),
             child: Divider(
-              color: Colors.grey, // 선의 색상
-              height: 10, // 선의 높이
+              color: Colors.grey,
+              height: 10,
             ),
+          ),
+          title: Row(
+            children: [
+              SizedBox(width: 16),
+              Text(
+                '커뮤니티',
+                style: TextStyle(fontSize: 20),
+              ),
+            ],
           ),
         ),
       ),

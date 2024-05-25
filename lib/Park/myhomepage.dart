@@ -20,7 +20,9 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 2;
 
   final List<Widget> _children = [
-    CommunityPage(),
+    CommunityPage(
+      allPosts: [],
+    ),
     ExerciseGuidePage(),
     HomeScreen(),
     MyRecordPage(selectedDate: DateTime.now()),

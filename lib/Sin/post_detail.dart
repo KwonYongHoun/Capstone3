@@ -21,7 +21,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
   void initState() {
     super.initState();
     _commentsFuture = _fetchComments();
-    // 좋아요 수 초기화 (임시로 0으로 설정)
     _likeCount = widget.post.likeCount ?? 0;
   }
 
@@ -62,6 +61,34 @@ class _PostDetailPageState extends State<PostDetailPage> {
     await DatabaseHelper.updateLikeCount(widget.post.postID!, _likeCount);
   }
 
+  void _reportPost() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('신고'),
+        content: Text('신고하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('아니오'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              int currentReportCount =
+                  await DatabaseHelper.getReportCount(widget.post.postID!);
+              await DatabaseHelper.updateReportCount(
+                  widget.post.postID!, currentReportCount + 1);
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text('신고가 접수되었습니다.')));
+            },
+            child: Text('예'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,6 +100,10 @@ class _PostDetailPageState extends State<PostDetailPage> {
             onPressed: () {
               // 스크랩 기능 추후 추가 예정
             },
+          ),
+          IconButton(
+            icon: Icon(Icons.report_problem), // 싸이렌 아이콘 사용
+            onPressed: _reportPost,
           ),
         ],
       ),

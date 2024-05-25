@@ -116,7 +116,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.post.type,
+                  widget.post.title,
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 Text(

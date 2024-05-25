@@ -54,7 +54,7 @@ class CustomSearchDelegate extends SearchDelegate<String> {
             itemBuilder: (context, index) {
               final post = filteredPosts[index];
               return ListTile(
-                title: Text(post.type),
+                title: Text(post.title),
                 subtitle: Text(post.content),
                 onTap: () {
                   Navigator.push(
@@ -99,10 +99,10 @@ class CustomSearchDelegate extends SearchDelegate<String> {
             itemBuilder: (context, index) {
               final post = suggestedPosts[index];
               return ListTile(
-                title: Text(post.type),
+                title: Text(post.title),
                 subtitle: Text(post.content),
                 onTap: () {
-                  query = post.type;
+                  query = post.title;
                   showResults(context);
                 },
               );

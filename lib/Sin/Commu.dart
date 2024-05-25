@@ -312,11 +312,12 @@ class DatabaseHelper {
   }
 
   // 게시물 검색
+  // 게시물 검색
   static Future<List<Commu>> searchPosts(String query) async {
     final List<Map<String, dynamic>> maps = await _database.query(
       postsTable,
-      where: 'content LIKE ? OR type LIKE ?',
-      whereArgs: ['%$query%', '%$query%'],
+      where: 'title LIKE ? OR content LIKE ?', // 제목 또는 내용에 대한 조건
+      whereArgs: ['%$query%', '%$query%'], // 쿼리를 제목과 내용에 대한 검색어로 대체
     );
 
     List<Commu> posts = [];

@@ -98,7 +98,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
           onPressed: () {
             final member = Member(
               memberNumber: widget.currentMemberNumber,
-              password: int.parse(_phoneNumberController.text), // 임시 값
+              password: _phoneNumberController.text, // 초기값 : 전화번호
               name: _nameController.text,
               phoneNumber: _phoneNumberController.text,
               registrationDate: _registrationDate,

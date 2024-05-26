@@ -127,6 +127,7 @@ class DatabaseHelper {
       tableName,
       where: 'name LIKE ? OR phoneNumber LIKE ?',
       whereArgs: ['%$searchQuery%', '%$searchQuery%'],
+<<<<<<< HEAD
     );
     return List.generate(maps.length, (i) {
       return Member(
@@ -147,6 +148,8 @@ class DatabaseHelper {
       tableName,
       where: 'memberNumber = ? AND password = ?',
       whereArgs: [id, password],
+=======
+>>>>>>> 4d28670396853e2fbcce192959afd8407d54def4
     );
     return List.generate(maps.length, (i) {
       return Member(

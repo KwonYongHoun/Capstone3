@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../member.dart';
+import '../member.dart';
 
 class MemberDetailsDialog extends StatefulWidget {
   final Member member;
@@ -19,6 +19,7 @@ class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
   late TextEditingController _nameController;
   late TextEditingController _phoneNumberController;
   late TextEditingController _memberStateController;
+  late TextEditingController _passwordController;
   late DateTime _registrationDate;
   late DateTime _expirationDate;
 
@@ -30,6 +31,7 @@ class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
         TextEditingController(text: widget.member.phoneNumber);
     _memberStateController =
         TextEditingController(text: widget.member.memberState);
+    _passwordController = TextEditingController(text: widget.member.password);
     _registrationDate = widget.member.registrationDate;
     _expirationDate = widget.member.expirationDate;
   }
@@ -52,7 +54,11 @@ class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
           ),
           TextField(
             controller: _memberStateController,
-            decoration: InputDecoration(labelText: '회원 상태'),
+            decoration: InputDecoration(labelText: '회원권 상태'),
+          ),
+          TextField(
+            controller: _passwordController,
+            decoration: InputDecoration(labelText: '비밀번호'),
           ),
           SizedBox(height: 16),
           Text('등록일: ${_registrationDate.toString().substring(0, 10)}'),
@@ -97,7 +103,7 @@ class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
           onPressed: () {
             final updatedMember = Member(
               memberNumber: widget.member.memberNumber,
-              password: widget.member.password,
+              password: _passwordController.text,
               name: _nameController.text,
               phoneNumber: _phoneNumberController.text,
               registrationDate: _registrationDate,

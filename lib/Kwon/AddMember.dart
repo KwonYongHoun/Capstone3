@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../member.dart';
+
+import '../member.dart';
 
 class AddMemberDialog extends StatefulWidget {
   final int currentMemberNumber;
@@ -52,7 +53,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
           TextField(
             // TextField for member state
             controller: _memberStateController,
-            decoration: InputDecoration(labelText: '회원 상태'),
+            decoration: InputDecoration(labelText: '회원권 상태'),
           ),
           SizedBox(height: 16),
           Text('등록일: ${_registrationDate.toString().substring(0, 10)}'),
@@ -97,7 +98,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
           onPressed: () {
             final member = Member(
               memberNumber: widget.currentMemberNumber,
-              password: 0, // 임시 값
+              password: _phoneNumberController.text, // 초기값 : 전화번호
               name: _nameController.text,
               phoneNumber: _phoneNumberController.text,
               registrationDate: _registrationDate,

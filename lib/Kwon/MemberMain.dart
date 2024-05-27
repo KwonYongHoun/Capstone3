@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../member.dart';
+import '../member.dart';
 import 'AddMember.dart';
 import 'MemberDetail.dart';
 import 'SearchMember.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'loginpage.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'loginpage.dart'; // enteredId 변수가 여기서 선언된 것으로 가정
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -36,13 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 230,
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 2),
-                  ),
-                ),
-                Text(
-                  '회원번호 : $enteredId',
-                  style: TextStyle(
-                    fontSize: 18,
-                    decoration: TextDecoration.underline,
                   ),
                 ),
               ],

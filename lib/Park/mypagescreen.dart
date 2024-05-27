@@ -52,6 +52,12 @@ class _MyPageScreenState extends State<MypageScreen> {
             leading: CircleAvatar(
               child: Icon(Icons.person),
             ),
+            title: Text(
+              '$enteredName',
+              style: TextStyle(
+                fontSize: 18,
+              ),
+            ),
           ),
           Divider(),
           ListTile(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'loginpage.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -6,7 +7,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String uniqueUserId = 'sku12340001';
   String congestion = '여유'; // '보통'을 '여유'로 변경
 
   @override
@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Text(
-                  '회원번호 : $uniqueUserId',
+                  '회원번호 : $enteredId',
                   style: TextStyle(
                     fontSize: 18,
                     decoration: TextDecoration.underline,

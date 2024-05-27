@@ -56,17 +56,6 @@ class _WritePageState extends State<WritePage> {
           },
         ),
         title: Text('글쓰기'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              addPostToDatabase();
-            },
-            child: Text(
-              '완료',
-              style: TextStyle(color: Colors.pink),
-            ),
-          ),
-        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),

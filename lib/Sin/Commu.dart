@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -10,6 +11,7 @@ class Commu {
   final DateTime createdAt;
   int? commentCount;
   int? likeCount;
+  int? reportCount; // 신고 수 필드 추가
   DateTime? timestamp;
   String? name;
 
@@ -22,10 +24,12 @@ class Commu {
     required this.createdAt,
     this.commentCount,
     this.likeCount,
+    this.reportCount, // 신고 수 필드 초기화
     this.timestamp,
     this.name,
   });
 
+  // 맵 형식으로 변환
   Map<String, dynamic> toMap() {
     return {
       'postID': postID,
@@ -36,10 +40,12 @@ class Commu {
       'createdAt': createdAt.toIso8601String(),
       'name': name,
       'likeCount': likeCount,
+      'reportCount': reportCount, // 신고 수 필드 추가
     };
   }
 }
 
+// 댓글 클래스 Comment 정의
 class Comment {
   final int? commentID;
   final int postID;
@@ -55,6 +61,7 @@ class Comment {
     required this.createdAt,
   });
 
+  // 맵 형식으로 변환
   Map<String, dynamic> toMap() {
     return {
       'commentID': commentID,
@@ -66,39 +73,48 @@ class Comment {
   }
 }
 
+// DatabaseHelper 클래스 정의
 class DatabaseHelper {
   static late Database _database;
   static const String commuDbName = 'commu.db';
   static const String postsTable = 'Posts';
   static const String commentsTable = 'Comments';
 
-  static Future<void> initDatabase() async {
+  // 데이터베이스 초기화
+  static Future<Database> initDatabase() async {
     _database = await openDatabase(
       join(await getDatabasesPath(), commuDbName),
       onCreate: (db, version) async {
         await _createTables(db);
         await _insertInitialData(db);
       },
-      version: 2,
+      version: 3, // 버전 변경
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await _createTables(db);
         }
+        if (oldVersion < 3) {
+          await db.execute(
+              'ALTER TABLE $postsTable ADD COLUMN reportCount INTEGER DEFAULT 0'); // 신고 수 필드 추가
+        }
       },
     );
+    return _database;
   }
 
+  // 테이블 생성
   static Future<void> _createTables(Database db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS $postsTable(
         postID INTEGER PRIMARY KEY,
         fk_memberNumber INTEGER,
         type TEXT,
-        title TEXT, -- 제목 필드 추가
+        title TEXT,
         content TEXT,
         createdAt TEXT,
         name TEXT,
-        likeCount INTEGER DEFAULT 0
+        likeCount INTEGER DEFAULT 0,
+        reportCount INTEGER DEFAULT 0 // 신고 수 필드 추가
       )
     ''');
 
@@ -114,13 +130,14 @@ class DatabaseHelper {
     ''');
   }
 
+  // 초기 데이터 삽입
   static Future<void> _insertInitialData(Database db) async {
     final List<Map<String, dynamic>> initialData = [
       {
         'postID': 1,
         'fk_memberNumber': 1,
         'type': '자유게시판',
-        'title': '첫 번째 게시물 제목', // 제목 데이터 추가
+        'title': '첫 번째 게시물 제목',
         'content': '첫 번째 게시물 내용입니다.',
         'createdAt': DateTime.now().toIso8601String(),
         'name': '회원1',
@@ -129,7 +146,7 @@ class DatabaseHelper {
         'postID': 2,
         'fk_memberNumber': 2,
         'type': '헬스 파트너 찾기',
-        'title': '두 번째 게시물 제목', // 제목 데이터 추가
+        'title': '두 번째 게시물 제목',
         'content': '두 번째 게시물 내용입니다.',
         'createdAt': DateTime.now().toIso8601String(),
         'name': '회원2',
@@ -138,7 +155,7 @@ class DatabaseHelper {
         'postID': 3,
         'fk_memberNumber': 3,
         'type': '운동 고민 게시판',
-        'title': '세 번째 게시물 제목', // 제목 데이터 추가
+        'title': '세 번째 게시물 제목',
         'content': '세 번째 게시물 내용입니다.',
         'createdAt': DateTime.now().toIso8601String(),
         'name': '회원3',
@@ -150,6 +167,32 @@ class DatabaseHelper {
     }
   }
 
+  // 신고 수 업데이트 메서드 추가
+  static Future<void> updateReportCount(int postID, int newReportCount) async {
+    await _database.update(
+      postsTable,
+      {'reportCount': newReportCount},
+      where: 'postID = ?',
+      whereArgs: [postID],
+    );
+  }
+
+  // 특정 게시물의 신고 수 가져오기
+  static Future<int> getReportCount(int postID) async {
+    final List<Map<String, dynamic>> maps = await _database.query(
+      postsTable,
+      columns: ['reportCount'],
+      where: 'postID = ?',
+      whereArgs: [postID],
+    );
+    if (maps.isNotEmpty) {
+      return maps.first['reportCount'];
+    } else {
+      return 0;
+    }
+  }
+
+  // 특정 유형의 게시물 가져오기
   static Future<List<Commu>> getPostsByType(String type) async {
     final List<Map<String, dynamic>> maps = await _database.query(
       postsTable,
@@ -179,14 +222,17 @@ class DatabaseHelper {
     return posts;
   }
 
+  // 게시물 삽입
   static Future<void> insertPost(Commu post) async {
     await _database.insert(postsTable, post.toMap());
   }
 
+  // 댓글 삽입
   static Future<void> insertComment(Comment comment) async {
     await _database.insert(commentsTable, comment.toMap());
   }
 
+  // 특정 게시물의 댓글 가져오기
   static Future<List<Comment>> getCommentsByPostID(int postID) async {
     final List<Map<String, dynamic>> maps = await _database.query(
       commentsTable,
@@ -204,6 +250,7 @@ class DatabaseHelper {
     });
   }
 
+  // 모든 게시물 가져오기
   static Future<List<Commu>> getPosts() async {
     final List<Map<String, dynamic>> maps = await _database.query(postsTable);
 
@@ -221,7 +268,7 @@ class DatabaseHelper {
           createdAt: DateTime.parse(map['createdAt']),
           commentCount: commentCount,
           timestamp: DateTime.parse(map['createdAt']),
-          name: map['name'], // 이름 추가
+          name: map['name'],
         ),
       );
     }
@@ -229,6 +276,7 @@ class DatabaseHelper {
     return posts;
   }
 
+  // 특정 게시물의 댓글 수 가져오기
   static Future<int> _getCommentCount(int postID) async {
     final List<Map<String, dynamic>> maps = await _database.query(
       commentsTable,
@@ -238,6 +286,7 @@ class DatabaseHelper {
     return maps.length;
   }
 
+  // 특정 게시물의 좋아요 수 가져오기
   static Future<int> getLikeCount(int postID) async {
     final List<Map<String, dynamic>> maps = await _database.query(
       postsTable,
@@ -252,6 +301,7 @@ class DatabaseHelper {
     }
   }
 
+  // 특정 게시물의 좋아요 수 업데이트
   static Future<void> updateLikeCount(int postID, int newLikeCount) async {
     await _database.update(
       postsTable,
@@ -259,5 +309,36 @@ class DatabaseHelper {
       where: 'postID = ?',
       whereArgs: [postID],
     );
+  }
+
+  // 게시물 검색
+  // 게시물 검색
+  static Future<List<Commu>> searchPosts(String query) async {
+    final List<Map<String, dynamic>> maps = await _database.query(
+      postsTable,
+      where: 'title LIKE ? OR content LIKE ?', // 제목 또는 내용에 대한 조건
+      whereArgs: ['%$query%', '%$query%'], // 쿼리를 제목과 내용에 대한 검색어로 대체
+    );
+
+    List<Commu> posts = [];
+    for (final map in maps) {
+      final int postID = map['postID'];
+      final int commentCount = await _getCommentCount(postID);
+      posts.add(
+        Commu(
+          postID: map['postID'],
+          fk_memberNumber: map['fk_memberNumber'],
+          type: map['type'],
+          title: map['title'],
+          content: map['content'],
+          createdAt: DateTime.parse(map['createdAt']),
+          commentCount: commentCount,
+          timestamp: DateTime.parse(map['createdAt']),
+          name: map['name'],
+        ),
+      );
+    }
+
+    return posts;
   }
 }

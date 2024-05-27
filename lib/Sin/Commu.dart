@@ -311,6 +311,21 @@ class DatabaseHelper {
     );
   }
 
+// 게시물 삭제 메서드 추가
+  static Future<void> deletePost(int postID) async {
+    await _database.delete(
+      postsTable,
+      where: 'postID = ?',
+      whereArgs: [postID],
+    );
+    // 해당 게시물의 댓글도 삭제
+    await _database.delete(
+      commentsTable,
+      where: 'postID = ?',
+      whereArgs: [postID],
+    );
+  }
+
   // 게시물 검색
   // 게시물 검색
   static Future<List<Commu>> searchPosts(String query) async {

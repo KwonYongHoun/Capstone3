@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'loginpage.dart'; // enteredId 변수가 여기서 선언된 것으로 가정
+import '../Kwon/Congestion.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -8,7 +9,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String congestion = '여유';
+  String congestion = congestionChange;
   String Id = enteredId;
 
   @override

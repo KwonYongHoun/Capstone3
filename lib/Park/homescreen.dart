@@ -8,7 +8,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String congestion = '여유'; // '보통'을 '여유'로 변경
+  String congestion = '여유';
+  String Id = enteredId;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +38,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 230,
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 2),
+                  ),
+                  child: Center(
+                    child: QrImageView(
+                      data: Id,
+                      version: QrVersions.auto,
+                      size: 200.0,
+                    ),
+                  ),
+                ),
+                Text(
+                  '회원번호:$Id',
+                  style: TextStyle(
+                    fontSize: 18,
+                    decoration: TextDecoration.underline,
                   ),
                 ),
               ],

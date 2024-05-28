@@ -35,7 +35,7 @@ class _SearchDialogState extends State<SearchDialog> {
       actions: [
         ElevatedButton(
           onPressed: () async {
-            // 검색 버튼을 눌렀을 때의 로직입니다.
+            // 검색 버튼을 눌렀을 때의 로직
             // Member 데이터베이스에서 검색어와 일치하는 회원을 찾습니다.
             List<Member> matchingMembers =
                 await DatabaseHelper.searchMembers(_searchQuery);

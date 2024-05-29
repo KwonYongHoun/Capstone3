@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../member.dart';
+import '../member.dart';
 import 'AddMember.dart';
 import 'MemberDetail.dart';
 import 'SearchMember.dart';
@@ -30,16 +30,26 @@ class _MemberManagementPageState extends State<MemberManagementPage> {
 
   // 현재 회원 번호를 계산하는 메서드
   void _calculateMemberNumber() async {
-    // 현재 날짜로부터 회원번호를 생성합니다.
     final now = DateTime.now();
-    // 가장 최근의 회원 번호를 데이터베이스에서 가져옵니다.
     List<Member> members = await DatabaseHelper.getMembers();
     if (members.isEmpty) {
-      _currentMemberNumber = int.parse(
-          '${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
+      setState(() {
+        _currentMemberNumber = int.parse('${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
+      });
     } else {
-      // 데이터베이스에 회원이 있는 경우 가장 최근의 회원 번호를 가져옵니다.
-      _currentMemberNumber = members.last.memberNumber + 1;
+      final lastMember = members.last;
+      final lastRegistrationDate = lastMember.registrationDate;
+      if (lastRegistrationDate.year != now.year ||lastRegistrationDate.month != now.month ||lastRegistrationDate.day != now.day) {
+        // 오늘 날짜와 마지막 등록일이 다른 경우
+        setState(() {
+          _currentMemberNumber = int.parse('${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
+        });
+      } else {
+        // 오늘 날짜와 마지막 등록일이 같은 경우
+        setState(() {
+          _currentMemberNumber = lastMember.memberNumber + 1;
+        });
+      }
     }
   }
 
@@ -147,7 +157,7 @@ class _MemberManagementPageState extends State<MemberManagementPage> {
             ),
           );
           if (member != null) {
-            DatabaseHelper.insertMember(member);
+            await DatabaseHelper.insertMember(member);
             _loadMembers();
             _currentMemberNumber++; // 회원 추가 후 회원 번호 증가
           }

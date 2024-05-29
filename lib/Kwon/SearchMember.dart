@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:health/Kwon/MemberManagement/MemberDetail.dart';
-
-import '../../member.dart';
+import 'package:health/Kwon/MemberDetail.dart';
+import '../member.dart';
 
 class SearchDialog extends StatefulWidget {
   _SearchDialogState createState() => _SearchDialogState();
@@ -36,7 +35,7 @@ class _SearchDialogState extends State<SearchDialog> {
       actions: [
         ElevatedButton(
           onPressed: () async {
-            // 검색 버튼을 눌렀을 때의 로직입니다.
+            // 검색 버튼을 눌렀을 때의 로직
             // Member 데이터베이스에서 검색어와 일치하는 회원을 찾습니다.
             List<Member> matchingMembers =
                 await DatabaseHelper.searchMembers(_searchQuery);

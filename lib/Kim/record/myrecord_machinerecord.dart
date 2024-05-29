@@ -1,6 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
-// 왜 커밋이 안 됨????
+class DatabaseManager {
+  late Database _database;
+
+  Future openDB() async {
+    _database = await openDatabase(
+      join(await getDatabasesPath(), 'exercise_database.db'),
+      onCreate: (db, version) {
+        return db.execute(
+          "CREATE TABLE exercises(id INTEGER PRIMARY KEY, exercise TEXT, reps INTEGER, weight INTEGER, distance REAL)",
+        );
+      },
+      version: 1,
+    );
+  }
+
+  Future<void> insertExercise(
+      String exercise, int reps, int weight, double distance) async {
+    await _database.insert(
+      'exercises',
+      {
+        'exercise': exercise,
+        'reps': reps,
+        'weight': weight,
+        'distance': distance
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+}
+
 class MyRecordMachineRecord extends StatefulWidget {
   final String exercise;
 
@@ -108,15 +139,6 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
             Center(
               child: Column(
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      // 세트 추가 버튼 클릭 시
-                      setState(() {
-                        sets.add(SetData(weight: 0, reps: 0));
-                      });
-                    },
-                    child: const Text('세트 추가하기'),
-                  ),
                   const SizedBox(height: 8), // 추가된 간격
                   ElevatedButton(
                     onPressed: () {
@@ -208,7 +230,7 @@ class _ExerciseIntensitySelectorState extends State<ExerciseIntensitySelector> {
         foregroundColor: _selectedIntensity == intensity
             ? Colors.white
             : Colors.black, // 선택된 버튼의 텍스트 색상을 흰색으로 변경
-        side: const BorderSide(color: Colors.blue), // 테두리를 파란색으로 설정
+        side: const BorderSide(color: Colors.green), // 테두리를 파란색으로 설정
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20), // 버튼 모양을 동그란 형태로 설정
         ),
@@ -223,8 +245,7 @@ class DetailedRecordScreen extends StatefulWidget {
 }
 
 class _DetailedRecordScreenState extends State<DetailedRecordScreen> {
-  String _selectedType = '횟수'; // 기본 선택된 타입
-
+  String _selectedType = '횟수';
   final List<TextEditingController> _repControllers = [];
   final List<TextEditingController> _weightControllers = [];
   final List<TextEditingController> _distanceControllers = [];
@@ -232,10 +253,10 @@ class _DetailedRecordScreenState extends State<DetailedRecordScreen> {
   @override
   void initState() {
     super.initState();
-    // 초기 세트 데이터를 추가합니다.
-    _addSet();
+    _addSet(); // 초기에 하나의 세트를 추가합니다.
   }
 
+  // 새로운 세트를 추가하는 메서드
   void _addSet() {
     _repControllers.add(TextEditingController());
     _weightControllers.add(TextEditingController());
@@ -260,57 +281,96 @@ class _DetailedRecordScreenState extends State<DetailedRecordScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            ToggleButtons(
-              children: const [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('횟수'),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('무게'),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('거리'),
-                ),
-              ],
-              isSelected: [
-                _selectedType == '횟수',
-                _selectedType == '무게',
-                _selectedType == '거리',
-              ],
-              onPressed: (int index) {
-                setState(() {
-                  if (index == 0) {
-                    _selectedType = '횟수';
-                  } else if (index == 1) {
-                    _selectedType = '무게';
-                  } else if (index == 2) {
-                    _selectedType = '거리';
-                  }
-                });
-              },
+            Center(
+              child: ToggleButtons(
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text('횟수'),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text('무게'),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text('거리'),
+                  ),
+                ],
+                isSelected: [
+                  _selectedType == '횟수',
+                  _selectedType == '무게',
+                  _selectedType == '거리',
+                ],
+                onPressed: (int index) {
+                  setState(() {
+                    _selectedType = index == 0
+                        ? '횟수'
+                        : index == 1
+                            ? '무게'
+                            : '거리';
+                    // 토글 버튼을 누를 때마다 해당하는 입력 필드들을 초기화합니다.
+                    _resetInputFields();
+                  });
+                },
+                color: Colors.green,
+                selectedColor: Colors.green, // 선택된 버튼의 색상
+                selectedBorderColor: Colors.green,
+                borderColor: Colors.green,
+              ),
             ),
             const SizedBox(height: 16),
             _buildInputForm(),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _addSet,
-              child: const Text('세트 추가하기'),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _addSet(); // '세트 추가하기' 버튼을 누를 때마다 새로운 세트를 추가합니다.
+                  });
+                },
+                child: const Text('세트 추가하기'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.green),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // 여기에 저장 작업 구현
-              },
-              child: const Text('기록 저장'),
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // 여기에 저장 작업 구현
+                  },
+                  child: const Text('입력 하기'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.green),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // 입력 필드 초기화 메서드
+  void _resetInputFields() {
+    for (var controller in _repControllers) {
+      controller.clear();
+    }
+    for (var controller in _weightControllers) {
+      controller.clear();
+    }
+    for (var controller in _distanceControllers) {
+      controller.clear();
+    }
   }
 
   Widget _buildInputForm() {

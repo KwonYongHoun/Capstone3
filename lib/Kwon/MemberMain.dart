@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../member.dart';
+import '../health.dart';
 import 'AddMember.dart';
 import 'MemberDetail.dart';
 import 'SearchMember.dart';
@@ -34,15 +34,19 @@ class _MemberManagementPageState extends State<MemberManagementPage> {
     List<Member> members = await DatabaseHelper.getMembers();
     if (members.isEmpty) {
       setState(() {
-        _currentMemberNumber = int.parse('${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
+        _currentMemberNumber = int.parse(
+            '${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
       });
     } else {
       final lastMember = members.last;
       final lastRegistrationDate = lastMember.registrationDate;
-      if (lastRegistrationDate.year != now.year ||lastRegistrationDate.month != now.month ||lastRegistrationDate.day != now.day) {
+      if (lastRegistrationDate.year != now.year ||
+          lastRegistrationDate.month != now.month ||
+          lastRegistrationDate.day != now.day) {
         // 오늘 날짜와 마지막 등록일이 다른 경우
         setState(() {
-          _currentMemberNumber = int.parse('${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
+          _currentMemberNumber = int.parse(
+              '${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
         });
       } else {
         // 오늘 날짜와 마지막 등록일이 같은 경우

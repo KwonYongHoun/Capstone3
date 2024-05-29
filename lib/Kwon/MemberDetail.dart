@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../member.dart';
+import '../health.dart';
 
 class MemberDetailsDialog extends StatefulWidget {
   final Member member;

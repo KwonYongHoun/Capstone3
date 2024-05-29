@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Commu.dart'; // DatabaseHelper와 Commu 클래스 import
+import '../health.dart'; // DatabaseHelper와 Commu 클래스 import
 import 'post_detail.dart'; // 게시물 상세 페이지 import
 import 'WPage.dart'; // 글쓰기 페이지 import
 

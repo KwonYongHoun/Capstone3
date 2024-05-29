@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health/Kwon/MemberDetail.dart';
-import '../member.dart';
+import '../health.dart';
 
 class SearchDialog extends StatefulWidget {
   _SearchDialogState createState() => _SearchDialogState();

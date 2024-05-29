@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'myhomepage.dart';
 import 'findid.dart';
 import 'findpassword.dart';
-import '../member.dart';
+import '../health.dart';
 import '../Kwon/AdminMain.dart';
 
 //입력된 아이디 비밀번호

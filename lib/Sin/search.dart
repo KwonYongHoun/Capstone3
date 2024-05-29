@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health/Sin/post_detail.dart';
-import 'Commu.dart'; // DatabaseHelper와 Commu, Comment 클래스 import
+import '../health.dart'; // DatabaseHelper와 Commu, Comment 클래스 import
 
 class CustomSearchDelegate extends SearchDelegate<String> {
   final List<Commu> allPosts;

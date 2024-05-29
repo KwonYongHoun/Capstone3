@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Commu.dart'; // DatabaseHelper와 Commu, Comment 클래스 import
+import '../health.dart'; // DatabaseHelper와 Commu, Comment 클래스 import
 
 class PostDetailPage extends StatefulWidget {
   final Commu post;

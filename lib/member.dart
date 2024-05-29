@@ -53,8 +53,7 @@ class DatabaseHelper {
     return openDatabase(path, version: 1, onCreate: (db, version) async {
       await db.execute('''
         CREATE TABLE $tableName(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          memberNumber INTEGER,
+          memberNumber INTEGER PRIMARY KEY AUTOINCREMENT,
           password TEXT,
           name TEXT,
           phoneNumber TEXT,

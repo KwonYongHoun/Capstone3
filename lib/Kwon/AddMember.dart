@@ -103,8 +103,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
               phoneNumber: _phoneNumberController.text,
               registrationDate: _registrationDate,
               expirationDate: _expirationDate,
-              memberState: _memberStateController
-                  .text, // Get member state from controller
+              memberState: _memberStateController.text, // Get member state from controller
             );
             Navigator.pop(context, member);
             widget.reloadMembers(); // 회원 목록 다시 로드

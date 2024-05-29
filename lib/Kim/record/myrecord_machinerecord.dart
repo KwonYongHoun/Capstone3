@@ -34,9 +34,8 @@ class DatabaseManager {
 
 class MyRecordMachineRecord extends StatefulWidget {
   final String exercise;
-  final List<SetData>? savedData; // 입력된 세트 데이터를 받을 변수
 
-  MyRecordMachineRecord({required this.exercise, this.savedData});
+  MyRecordMachineRecord({required this.exercise});
 
   @override
   _MyRecordMachineRecordState createState() => _MyRecordMachineRecordState();
@@ -45,42 +44,19 @@ class MyRecordMachineRecord extends StatefulWidget {
 class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
   List<SetData> sets = [];
   bool _isSaved = false;
-  String _selectedIntensity = '';
-  final _exerciseTimeController = TextEditingController();
-  final List<TextEditingController> _repControllers = [];
-  final List<TextEditingController> _weightControllers = [];
-  final List<TextEditingController> _distanceControllers = [];
-  String _detailedText = ''; // _detailedText 변수 추가
-
-// 여기에 generateDetailedText 함수 추가
-  String generateDetailedText(List<SetData>? savedData) {
-    if (savedData == null || savedData.isEmpty) {
-      return '저장된 데이터 없음';
-    } else {
-      String text = '저장된 데이터:\n';
-      for (int i = 0; i < savedData.length; i++) {
-        text +=
-            '세트 ${i + 1}: ${savedData[i].weight} kg, ${savedData[i].reps} 회, ${savedData[i].distance} km\n';
-      }
-      return text;
-    }
-  }
+  String _selectedIntensity = ''; // 운동 강도를 저장할 변수
+  final _exerciseTimeController =
+      TextEditingController(); // 운동 시간을 입력 받을 컨트롤러 생성
 
   @override
   void initState() {
     super.initState();
-    if (widget.savedData != null) {
-      sets.addAll(widget.savedData!);
-    } else {
-      _repControllers.add(TextEditingController());
-      _weightControllers.add(TextEditingController());
-      _distanceControllers.add(TextEditingController());
-    }
+    // 처음에 하나의 세트를 추가합니다.
+    sets.add(SetData(weight: 0, reps: 0));
   }
 
   @override
   Widget build(BuildContext context) {
-    // 이 부분에 TextButton 코드 추가
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.exercise} '),
@@ -96,14 +72,14 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
             ),
             const SizedBox(height: 8),
             TextFormField(
-              controller: _exerciseTimeController,
+              controller: _exerciseTimeController, // controller 할당
               decoration: const InputDecoration(
                 hintText: '운동 시간을 입력하세요',
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green),
+                  borderSide: BorderSide(color: Colors.green), // 기본 상태의 테두리 색
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green),
+                  borderSide: BorderSide(color: Colors.green), // 선택된 상태의 테두리 색
                 ),
               ),
             ),
@@ -122,83 +98,70 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
             ),
             const SizedBox(height: 16),
             const Text(
-              '상세 기록',
+              '상세 기록', // '상세 기록' 제목 추가
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            TextButton(
-              // 이 부분에 TextButton 코드 추가
-              onPressed: () async {
-                final data = await Navigator.push(
+            const SizedBox(height: 8), // '상세 기록' 제목과 버튼 사이에 간격 추가
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => DetailedRecordScreen(),
                   ),
                 );
-                if (data != null) {
-                  setState(() {
-                    _isSaved = true;
-                    _detailedText = generateDetailedText(data);
-                  });
-                  Future.delayed(const Duration(seconds: 2), () {
-                    setState(() {
-                      _isSaved = false;
-                    });
-                  });
-                }
               },
-              child: const Row(
-                children: [
-                  Text('상세 기록'),
-                  Icon(Icons.arrow_right),
-                ],
+              style: ElevatedButton.styleFrom(
+                side: const BorderSide(color: Colors.green), // 테두리 색상을 파란색으로 설정
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20), // 버튼 모양을 동그란 형태로 설정
+                ),
+                elevation: 0, // 그림자를 없애기 위해 elevation을 0으로 설정
+                padding: EdgeInsets.zero, // 내부 패딩을 없애기 위해 padding을 0으로 설정
+              ).copyWith(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Colors.white), // 버튼의 배경색을 하얀색으로 설정
+                foregroundColor: MaterialStateProperty.all<Color>(
+                    Colors.black), // 텍스트 색상을 검정색으로 설정
+              ),
+              child: Container(
+                alignment: Alignment.center, // 텍스트를 버튼 가운데 정렬
+                padding: const EdgeInsets.all(12.0), // 버튼 내부 패딩 추가
+                child: const Text(
+                  '상세 기록',
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
             Center(
               child: Column(
                 children: [
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 8), // 추가된 간격
                   ElevatedButton(
-                    onPressed: () async {
-                      List<SetData> setData = [];
-                      for (int i = 0; i < _repControllers.length; i++) {
-                        int reps = int.tryParse(_repControllers[i].text) ?? 0;
-                        int weight =
-                            int.tryParse(_weightControllers[i].text) ?? 0;
-                        double distance =
-                            double.tryParse(_distanceControllers[i].text) ??
-                                0.0;
-                        setData.add(SetData(
-                          weight: weight,
-                          reps: reps,
-                          distance: distance,
-                        ));
-                      }
+                    onPressed: () {
+                      // 추가하기 버튼 클릭 시
+                      // 여기에 추가 작업 구현
+                      //DatabaseManager().insertRecord(_exerciseTimeController
+                      //  .text); // 입력된 운동 시간을 데이터베이스에 저장
 
-                      bool saved = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MyRecordMachineRecord(
-                            exercise: widget.exercise,
-                            savedData: setData,
-                          ),
-                        ),
-                      );
+                      // '기록 저장'을 눌렀을 때 '저장 되었습니다' 문구를 보여줍니다.
+                      setState(() {
+                        _isSaved = true;
+                      });
 
-                      if (saved) {
+                      // 2초 후에 '저장 되었습니다' 문구를 숨깁니다.
+                      Future.delayed(const Duration(seconds: 2), () {
                         setState(() {
-                          _isSaved = true;
+                          _isSaved = false;
                         });
-                        Future.delayed(const Duration(seconds: 2), () {
-                          setState(() {
-                            _isSaved = false;
-                          });
-                        });
-                      }
+                      });
                     },
                     child: const Text('기록 저장'),
                   ),
+                  // '저장 되었습니다' 문구 표시
                   if (_isSaved)
                     const Padding(
                       padding: EdgeInsets.all(8.0),
@@ -220,9 +183,8 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
 class SetData {
   int weight;
   int reps;
-  double distance; // distance 필드 추가
 
-  SetData({required this.weight, required this.reps, required this.distance});
+  SetData({required this.weight, required this.reps});
 }
 
 class ExerciseIntensitySelector extends StatefulWidget {

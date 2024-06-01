@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Users/shinj/flutter_project/capstone/flutter_application_1/linux"
+    "cmake.sourceDirectory": "C:/Users/shinj/flutter_project/capstone/flutter_application_1/linux",
+    "cmake.configureOnOpen": false
 }

@@ -85,10 +85,6 @@ class Commu {
   final String content;
   final DateTime createdAt;
   int? commentCount;
-<<<<<<< HEAD
-=======
-  int? likeCount;
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
   int? reportCount;
   DateTime? timestamp;
   String? name;
@@ -101,10 +97,7 @@ class Commu {
     required this.content,
     required this.createdAt,
     this.commentCount,
-<<<<<<< HEAD
-=======
     this.likeCount,
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
     this.reportCount,
     this.timestamp,
     this.name,
@@ -119,10 +112,7 @@ class Commu {
       'content': content,
       'createdAt': createdAt.toIso8601String(),
       'commentCount': commentCount,
-<<<<<<< HEAD
-=======
       'likeCount': likeCount,
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
       'reportCount': reportCount,
       'timestamp': timestamp?.toIso8601String(),
       'name': name,
@@ -138,10 +128,7 @@ class Commu {
       content: map['content'],
       createdAt: DateTime.parse(map['createdAt']),
       commentCount: map['commentCount'],
-<<<<<<< HEAD
-=======
       likeCount: map['likeCount'],
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
       reportCount: map['reportCount'],
       name: map['name'],
     );
@@ -154,12 +141,6 @@ class Comment {
   final String memberNumber;
   final String content;
   final DateTime createdAt;
-<<<<<<< HEAD
-  final String name;
-  final bool isAnonymous;
-  int reportCount; // 신고 수 추가
-=======
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
 
   Comment({
     required this.commentID,
@@ -167,12 +148,6 @@ class Comment {
     required this.memberNumber,
     required this.content,
     required this.createdAt,
-<<<<<<< HEAD
-    required this.name,
-    required this.isAnonymous,
-    this.reportCount = 0, // 기본값은 0으로 설정
-=======
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
   });
 
   Map<String, dynamic> toMap() {
@@ -182,11 +157,6 @@ class Comment {
       'memberNumber': memberNumber,
       'content': content,
       'createdAt': createdAt.toIso8601String(),
-<<<<<<< HEAD
-      'name': isAnonymous ? 'Anonymous' : name,
-      'isAnonymous': isAnonymous,
-=======
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
     };
   }
 
@@ -197,11 +167,6 @@ class Comment {
       memberNumber: map['memberNumber'],
       content: map['content'],
       createdAt: DateTime.parse(map['createdAt']),
-<<<<<<< HEAD
-      name: map['isAnonymous'] ? 'Anonymous' : map['name'],
-      isAnonymous: map['isAnonymous'],
-=======
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
     );
   }
 }
@@ -211,13 +176,7 @@ class DatabaseHelper {
   static const String membersCollection = 'members';
   static const String postsCollection = 'posts';
   static const String commentsCollection = 'comments';
-<<<<<<< HEAD
-  static const String scrapsCollection = 'scraps';
-
-  // Firestore 초기화
-=======
 // Firestore 초기화
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
   static Future<void> initialize() async {
     await Firebase.initializeApp();
     _db = FirebaseFirestore.instance;
@@ -323,18 +282,9 @@ class DatabaseHelper {
     await _db.collection(postsCollection).doc(uniqueID).set(post.toMap());
   }
 
-<<<<<<< HEAD
-  // 댓글 삽입
-  static Future<void> insertComment(Comment comment) async {
-    await _db
-        .collection(commentsCollection)
-        .doc(comment.commentID)
-        .set(comment.toMap());
-=======
 // 댓글 삽입
   static Future<void> insertComment(Comment comment) async {
     await _db.collection(commentsCollection).add(comment.toMap());
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
   }
 
   // 특정 게시물의 댓글 가져오기
@@ -348,10 +298,6 @@ class DatabaseHelper {
         .toList();
   }
 
-<<<<<<< HEAD
-  // 댓글 수 가져오기
-  static Future<int> getCommentCount(String postID) async {
-=======
   // 모든 게시물 가져오기
   static Future<List<Commu>> getPosts() async {
     final querySnapshot = await _db.collection(postsCollection).get();
@@ -360,7 +306,6 @@ class DatabaseHelper {
 
   // 특정 게시물의 댓글 수 가져오기
   static Future<int> _getCommentCount(String postID) async {
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
     final querySnapshot = await _db
         .collection(commentsCollection)
         .where('postID', isEqualTo: postID)
@@ -368,10 +313,17 @@ class DatabaseHelper {
     return querySnapshot.docs.length;
   }
 
-<<<<<<< HEAD
-  // 댓글 수 업데이트
-  static Future<void> updateCommentCount(
-      String postID, int newCommentCount) async {
+  // 특정 게시물의 좋아요 수 가져오기
+  static Future<int> getLikeCount(String postID) async {
+    final docSnapshot = await _db.collection(postsCollection).doc(postID).get();
+    if (docSnapshot.exists) {
+      return docSnapshot.data()!['likeCount'];
+    }
+    return 0;
+  }
+
+  // 특정 게시물의 좋아요 수 업데이트
+  static Future<void> updateLikeCount(String postID, int newLikeCount) async {
     await _db
         .collection(postsCollection)
         .doc(postID)
@@ -405,29 +357,7 @@ class DatabaseHelper {
   // 게시물 삭제 메서드 수정
   static Future<void> deletePost(String postID) async {
     await _db.collection(postsCollection).doc(postID).delete();
-=======
-  // 특정 게시물의 좋아요 수 가져오기
-  static Future<int> getLikeCount(String postID) async {
-    final docSnapshot = await _db.collection(postsCollection).doc(postID).get();
-    if (docSnapshot.exists) {
-      return docSnapshot.data()!['likeCount'];
-    }
-    return 0;
-  }
-
-  // 특정 게시물의 좋아요 수 업데이트
-  static Future<void> updateLikeCount(String postID, int newLikeCount) async {
-    await _db
-        .collection(postsCollection)
-        .doc(postID)
-        .update({'likeCount': newLikeCount});
-  }
-
-  // 게시물 삭제
-  static Future<void> deletePost(String postID) async {
-    await _db.collection(postsCollection).doc(postID).delete();
     // 해당 게시물의 댓글도 삭제
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
     final querySnapshot = await _db
         .collection(commentsCollection)
         .where('postID', isEqualTo: postID)
@@ -446,71 +376,4 @@ class DatabaseHelper {
         .get();
     return querySnapshot.docs.map((doc) => Commu.fromMap(doc.data())).toList();
   }
-<<<<<<< HEAD
-
-  //스크랩 추가
-  static Future<void> addScrap(String memberNumber, String postID) async {
-    await _db.collection('scraps').add({
-      'memberNumber': memberNumber,
-      'postID': postID,
-      'scrapDate': DateTime.now().toIso8601String(),
-    });
-  }
-
-  // 특정 사용자의 스크랩한 게시물 가져오기
-  static Future<List<Commu>> getScrappedPosts(String memberNumber) async {
-    final querySnapshot = await _db
-        .collection('scraps')
-        .where('memberNumber', isEqualTo: memberNumber)
-        .get();
-    List<String> postIDs = querySnapshot.docs
-        .map((doc) => doc.data()['postID'] as String)
-        .toList();
-    if (postIDs.isEmpty) return [];
-    final postsQuery = await _db
-        .collection('posts') // 게시물 정보가 저장된 컬렉션
-        .where(FieldPath.documentId, whereIn: postIDs)
-        .get();
-    return postsQuery.docs.map((doc) => Commu.fromMap(doc.data())).toList();
-  }
-
-  // 스크랩 삭제
-  static Future<void> removeScrap(String memberNumber, String postID) async {
-    final querySnapshot = await _db
-        .collection('scraps')
-        .where('memberNumber', isEqualTo: memberNumber)
-        .where('postID', isEqualTo: postID)
-        .get();
-    for (final doc in querySnapshot.docs) {
-      await _db.collection('scraps').doc(doc.id).delete();
-    }
-  }
-
-  static Future<bool> isPostScrapped(String memberNumber, String postID) async {
-    final querySnapshot = await _db
-        .collection(scrapsCollection)
-        .where('memberNumber', isEqualTo: memberNumber)
-        .where('postID', isEqualTo: postID)
-        .get();
-    return querySnapshot.docs.isNotEmpty;
-  }
-
-  static Future<Comment?> getComment(String commentID) async {
-    final docSnapshot =
-        await _db.collection(commentsCollection).doc(commentID).get();
-    if (docSnapshot.exists) {
-      return Comment.fromMap(docSnapshot.data()!);
-    }
-    return null;
-  }
-
-  // 댓글 신고 수 업데이트
-  static Future<void> updateCommentReportCount(
-      String commentID, int newReportCount) async {
-    await _db.collection(commentsCollection).doc(commentID).update({
-      'reportCount': newReportCount,
-    });
-  }
-=======
->>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
 }

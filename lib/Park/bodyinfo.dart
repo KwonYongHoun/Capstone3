@@ -31,18 +31,18 @@ class _BodyInfoPageState extends State<BodyInfoPage> {
       return;
     }
 
-    String enteredId =
-        Provider.of<AuthProvider>(context, listen: false).enteredId;
-    int? memberNumber = int.tryParse(enteredId);
+    final loggedInMember =
+        Provider.of<AuthProvider>(context, listen: false).loggedInMember;
 
-    if (memberNumber == null) {
+    if (loggedInMember == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('잘못된 사용자 ID입니다.')),
+        SnackBar(content: Text('사용자 정보를 불러올 수 없습니다.')),
       );
       return;
     }
 
-    await DatabaseHelper.updateBodyInfo(memberNumber, height, weight);
+    await DatabaseHelper.updateBodyInfo(
+        loggedInMember.memberNumber, height, weight);
 
     Navigator.pop(context, {'height': height, 'weight': weight});
   }

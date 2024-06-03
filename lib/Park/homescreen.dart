@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:provider/provider.dart';
 import 'loginpage.dart'; // enteredId 변수가 여기서 선언된 것으로 가정
 import '../Kwon/Congestion.dart';
+import '../Sin/AuthProvider.dart'; // AuthProvider 임포트
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,10 +12,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String congestion = congestionChange;
-  String Id = enteredId;
 
   @override
   Widget build(BuildContext context) {
+    final loggedInMember = Provider.of<AuthProvider>(context).loggedInMember;
+    final Id = loggedInMember?.memberNumber.toString() ?? '';
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,

@@ -142,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
                 if (members.isNotEmpty) {
                   // Login successful
                   Provider.of<AuthProvider>(context, listen: false)
-                      .setAuthInfo(enteredId, enteredPassword);
+                      .login(members.first);
 
                   Navigator.pushReplacementNamed(context, '/home');
                 } else {

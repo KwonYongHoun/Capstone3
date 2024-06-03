@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:health/Park/loginpage.dart';
 import 'package:health/Park/mypagescreen.dart';
+import 'package:provider/provider.dart';
 import '../health.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../Sin/AuthProvider.dart';
 
 class NicknameChangePage extends StatefulWidget {
   @override
@@ -22,11 +24,25 @@ class _NicknameChangePageState extends State<NicknameChangePage> {
     String newNickname = _nicknameController.text;
 
     if (newNickname.isNotEmpty) {
-      int memberNumber = int.parse(enteredId); // 기존 사용자의 memberNumber를 사용
-      await DatabaseHelper.updateNickname(memberNumber, newNickname);
+      // AuthProvider에서 enteredId 가져오기
+      String enteredId =
+          Provider.of<AuthProvider>(context, listen: false).enteredId;
 
-      // 업데이트 후 이전 페이지로 돌아가고 데이터를 다시 로드하도록 합니다.
-      Navigator.pop(context, newNickname); // 현재 페이지 닫기, 닉네임 전달
+      int? memberNumber = int.tryParse(enteredId);
+      if (memberNumber != null) {
+        await DatabaseHelper.updateNickname(memberNumber, newNickname);
+
+        // 업데이트 후 MypageScreen을 갱신합니다.
+        Navigator.of(context).pop(); // 현재 페이지 닫기
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MypageScreen()),
+        );
+      } else {
+        // ID가 잘못된 경우 경고를 표시합니다.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('잘못된 사용자 ID입니다.')),
+        );
+      }
     } else {
       // 닉네임이 비어있는 경우 경고를 표시합니다.
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'loginpage.dart';
 import 'passwordchange.dart';
 import 'membership.dart';
@@ -6,6 +7,7 @@ import 'nicknamechange.dart';
 import 'bodyinfo.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../health.dart';
+import '../Sin/AuthProvider.dart';
 
 class MypageScreen extends StatefulWidget {
   const MypageScreen({super.key});
@@ -15,64 +17,45 @@ class MypageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MypageScreen> {
-  String Name = enteredName;
-  String Id = enteredId;
+  String name = '';
+  String id = '';
   double userHeight = 0; // cm
   double userWeight = 0; // kg
 
   @override
   void initState() {
     super.initState();
-    _loadNickname();
-    _loadBodyInfo();
+    _loadUserData();
   }
 
-  Future<void> _loadNickname() async {
-    Member? member = await DatabaseHelper.getMember(int.parse(Id));
+  Future<void> _loadUserData() async {
+    String enteredId =
+        Provider.of<AuthProvider>(context, listen: false).enteredId;
+
+    int? memberId = int.tryParse(enteredId);
+    if (memberId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('잘못된 사용자 ID입니다.')),
+      );
+      return;
+    }
+
+    Member? member = await DatabaseHelper.getMember(memberId);
     if (member != null) {
+      BodyInfo? bodyInfo = await DatabaseHelper.getBodyInfo(memberId);
       setState(() {
-        Name = member.nickname.isNotEmpty ? member.nickname : member.name;
+        name = member.nickname.isNotEmpty ? member.nickname : member.name;
+        id = member.memberNumber.toString();
+        if (bodyInfo != null) {
+          userHeight = bodyInfo.height;
+          userWeight = bodyInfo.weight;
+        }
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('사용자 정보를 불러올 수 없습니다.')),
+      );
     }
-  }
-
-  Future<void> _loadBodyInfo() async {
-    BodyInfo? bodyInfo = await DatabaseHelper.getBodyInfo(int.parse(Id));
-    if (bodyInfo != null) {
-      setState(() {
-        userHeight = bodyInfo.height;
-        userWeight = bodyInfo.weight;
-      });
-    }
-  }
-
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('로그아웃'),
-          content: Text('정말 로그아웃 하시겠습니까?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('취소'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('확인'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -106,10 +89,10 @@ class _MyPageScreenState extends State<MypageScreen> {
                   leading: CircleAvatar(
                     radius: 30.0,
                     backgroundColor: Colors.green[100],
-                    child: Icon(FontAwesomeIcons.user, size: 25.0),
+                    child: Icon(Icons.person, size: 25.0),
                   ),
-                  title: Text('$Name 님'), // 이름 또는 닉네임 표시
-                  subtitle: Text('회원번호: $Id'),
+                  title: Text('$name 님'),
+                  subtitle: Text('회원번호: $id'),
                 ),
                 Divider(color: Colors.white),
                 Padding(
@@ -134,42 +117,38 @@ class _MyPageScreenState extends State<MypageScreen> {
           ),
           Divider(),
           ListTile(
-              contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0),
-              title: Text('회원 신체 정보'),
-              trailing: Icon(Icons.arrow_forward_ios, size: 17),
-              leading: Icon(FontAwesomeIcons.person),
-              onTap: () async {
-                final result = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (context) => BodyInfoPage(enteredId: Id)),
-                );
-                if (result != null && result is Map<String, double>) {
-                  setState(() {
-                    userHeight = result['height']!;
-                    userWeight = result['weight']!;
-                  });
-                }
-              }),
-          ListTile(
-            contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0),
-            leading: Icon(FontAwesomeIcons.edit),
-            title: Text('닉네임 관리'),
+            contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0), // 패딩 값 설정
+            title: Text('회원 신체 정보'),
             trailing: Icon(Icons.arrow_forward_ios, size: 17),
+            leading: Icon(Icons.person),
             onTap: () async {
-              final newNickname = await Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => NicknameChangePage()),
+              final result = await Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => BodyInfoPage()),
               );
-              if (newNickname != null) {
+
+              if (result != null) {
                 setState(() {
-                  Name = newNickname; // 닉네임을 Name에 덮어씌우기
+                  userHeight = result['height'];
+                  userWeight = result['weight'];
                 });
               }
             },
           ),
+          ListTile(
+            contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0), // 패딩 값 설정
+            leading: Icon(Icons.edit), // 닉네임 관리 아이콘
+            title: Text('닉네임 관리'),
+            trailing: Icon(Icons.arrow_forward_ios, size: 17),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => NicknameChangePage()),
+              );
+            },
+          ),
           Divider(),
           ListTile(
-            contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0),
-            leading: Icon(FontAwesomeIcons.lock),
+            contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0), // 패딩 값 설정
+            leading: Icon(Icons.lock), // 비밀번호 관리 아이콘
             title: Text('비밀번호 관리'),
             trailing: Icon(Icons.arrow_forward_ios, size: 17),
             onTap: () {
@@ -179,8 +158,8 @@ class _MyPageScreenState extends State<MypageScreen> {
             },
           ),
           ListTile(
-            contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0),
-            leading: Icon(FontAwesomeIcons.idCard),
+            contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0), // 패딩 값 설정
+            leading: Icon(Icons.card_membership), // 회원권 관리 아이콘
             title: Text('회원권 관리'),
             trailing: Icon(Icons.arrow_forward_ios, size: 17),
             onTap: () {
@@ -192,8 +171,8 @@ class _MyPageScreenState extends State<MypageScreen> {
           ),
           Divider(),
           ListTile(
-            contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0),
-            leading: Icon(FontAwesomeIcons.signOutAlt),
+            contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0), // 패딩 값 설정
+            leading: Icon(Icons.logout), // 로그아웃 아이콘
             title: Text('로그아웃'),
             trailing: Icon(Icons.arrow_forward_ios, size: 17),
             onTap: _showLogoutDialog,
@@ -201,5 +180,39 @@ class _MyPageScreenState extends State<MypageScreen> {
         ],
       ),
     );
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('로그아웃'),
+          content: Text('정말 로그아웃 하시겠습니까?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                ); // LoginPage로 이동
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

@@ -19,6 +19,9 @@ class _PasswordChangePageState extends State<PasswordChangePage> {
   void _changePassword() async {
     String oldPassword = _oldPasswordController.text;
     String newPassword = _newPasswordController.text;
+    String enteredId =
+        Provider.of<AuthProvider>(context, listen: false).enteredId;
+
     // enteredId 값을 디버깅하기 위해 출력
     print('enteredId: $enteredId');
 

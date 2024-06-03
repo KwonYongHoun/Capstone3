@@ -23,11 +23,14 @@ class AuthProvider extends ChangeNotifier {
 
 //비밀번호
 
+  String _enteredId = '';
   String _enteredPassword = '';
 
+  String get enteredId => _enteredId;
   String get enteredPassword => _enteredPassword;
 
   void setAuthInfo(String id, String password) {
+    _enteredId = id;
     _enteredPassword = password;
     notifyListeners();
   }

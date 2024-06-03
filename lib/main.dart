@@ -5,8 +5,12 @@ import 'Sin/AuthProvider.dart';
 import 'Park/loginpage.dart';
 import 'Park/myhomepage.dart';
 import 'Sin/WPage.dart';
+import 'Park/findid.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MaterialApp(home: FindId()));
   runApp(
     MultiProvider(
       providers: [

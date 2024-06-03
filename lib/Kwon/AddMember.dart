@@ -110,12 +110,6 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
             // 회원 추가
             DatabaseHelper.insertMember(member);
 
-            // AuthProvider에 저장
-            Provider.of<AuthProvider>(context, listen: false).setAuthInfo(
-              widget.currentMemberNumber.toString(),
-              _phoneNumberController.text,
-            );
-
             Navigator.pop(context);
             widget.reloadMembers();
           },

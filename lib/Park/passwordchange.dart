@@ -19,38 +19,25 @@ class _PasswordChangePageState extends State<PasswordChangePage> {
   void _changePassword() async {
     String oldPassword = _oldPasswordController.text;
     String newPassword = _newPasswordController.text;
-    String enteredId =
-        Provider.of<AuthProvider>(context, listen: false).enteredId;
 
-    // enteredId 값을 디버깅하기 위해 출력
-    print('enteredId: $enteredId');
+    final loggedInMember =
+        Provider.of<AuthProvider>(context, listen: false).loggedInMember;
 
-    // enteredId가 숫자로 변환 가능한지 확인
-    int? memberId = int.tryParse(enteredId);
-    if (memberId == null) {
+    if (loggedInMember == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('잘못된 사용자 ID입니다.')),
+        SnackBar(content: Text('사용자 정보가 없습니다.')),
       );
       return;
     }
 
     try {
-      // 현재 사용자의 정보를 가져옵니다.
-      Member? currentUser = await DatabaseHelper.getMember(memberId);
-      if (currentUser == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('사용자 정보를 찾을 수 없습니다.')),
-        );
-        return;
-      }
-
       if (_formKey.currentState!.validate()) {
         // 기존 비밀번호가 현재 비밀번호 또는 초기 전화번호와 일치하는지 확인합니다.
-        if (oldPassword == currentUser.password ||
-            oldPassword == currentUser.phoneNumber) {
+        if (oldPassword == loggedInMember.password ||
+            oldPassword == loggedInMember.phoneNumber) {
           // 비밀번호 변경
           await DatabaseHelper.updatePassword(
-              currentUser.memberNumber, newPassword);
+              loggedInMember.memberNumber, newPassword);
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('비밀번호가 변경되었습니다.')),

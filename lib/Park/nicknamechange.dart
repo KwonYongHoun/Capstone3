@@ -24,23 +24,20 @@ class _NicknameChangePageState extends State<NicknameChangePage> {
     String newNickname = _nicknameController.text;
 
     if (newNickname.isNotEmpty) {
-      // AuthProvider에서 enteredId 가져오기
-      String enteredId =
-          Provider.of<AuthProvider>(context, listen: false).enteredId;
+      // AuthProvider에서 로그인된 사용자 정보 가져오기
+      Member? loggedInMember =
+          Provider.of<AuthProvider>(context, listen: false).loggedInMember;
 
-      int? memberNumber = int.tryParse(enteredId);
-      if (memberNumber != null) {
-        await DatabaseHelper.updateNickname(memberNumber, newNickname);
+      if (loggedInMember != null) {
+        await DatabaseHelper.updateNickname(
+            loggedInMember.memberNumber, newNickname);
 
         // 업데이트 후 MypageScreen을 갱신합니다.
-        Navigator.of(context).pop(); // 현재 페이지 닫기
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => MypageScreen()),
-        );
+        Navigator.pop(context, newNickname); // 변경된 닉네임 전달
       } else {
-        // ID가 잘못된 경우 경고를 표시합니다.
+        // 로그인된 사용자가 없는 경우 경고를 표시합니다.
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('잘못된 사용자 ID입니다.')),
+          SnackBar(content: Text('로그인된 사용자가 없습니다.')),
         );
       }
     } else {

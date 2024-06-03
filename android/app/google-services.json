@@ -1,10 +1,30 @@
 {
   "project_info": {
     "project_number": "23316715809",
+    "firebase_url": "https://health-4c6c4-default-rtdb.firebaseio.com",
     "project_id": "health-4c6c4",
     "storage_bucket": "health-4c6c4.appspot.com"
   },
   "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:23316715809:android:d1fc670dc3637827d2c660",
+        "android_client_info": {
+          "package_name": "com.android.application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2cJe6OuSCysQjtaj9mLwd7W39x1HyscU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
     {
       "client_info": {
         "mobilesdk_app_id": "1:23316715809:android:b9ba3988daaf1c4dd2c660",

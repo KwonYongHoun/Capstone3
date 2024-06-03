@@ -1,19 +1,36 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../health.dart';
 
 class BodyInfoPage extends StatefulWidget {
+  final String enteredId;
+
+  BodyInfoPage({required this.enteredId});
+
   @override
   _BodyInfoPageState createState() => _BodyInfoPageState();
 }
 
 class _BodyInfoPageState extends State<BodyInfoPage> {
-  final _heightController = TextEditingController();
-  final _weightController = TextEditingController();
+  TextEditingController _heightController = TextEditingController();
+  TextEditingController _weightController = TextEditingController();
 
   @override
   void dispose() {
     _heightController.dispose();
     _weightController.dispose();
     super.dispose();
+  }
+
+  Future<void> _updateBodyInfo() async {
+    double height = double.parse(_heightController.text);
+    double weight = double.parse(_weightController.text);
+
+    int memberNumber = int.parse(widget.enteredId); // widget.enteredId 사용
+    await DatabaseHelper.updateBodyInfo(memberNumber, height, weight);
+
+    // 업데이트 후 마이페이지로 돌아가기
+    Navigator.pop(context, {'height': height, 'weight': weight});
   }
 
   @override
@@ -77,7 +94,7 @@ class _BodyInfoPageState extends State<BodyInfoPage> {
             Padding(
               padding: const EdgeInsets.only(bottom: 20.0), // 하단 여백 조정
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _updateBodyInfo,
                 child: Text('변경하기',
                     style: TextStyle(
                         fontWeight: FontWeight.bold, color: Colors.white)),

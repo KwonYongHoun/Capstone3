@@ -5,6 +5,7 @@ class Member {
   final int memberNumber;
   final String password;
   final String name;
+  final String nickname;
   final String phoneNumber;
   final DateTime registrationDate;
   final DateTime expirationDate;
@@ -14,6 +15,7 @@ class Member {
     required this.memberNumber,
     required this.password,
     required this.name,
+    required this.nickname,
     required this.phoneNumber,
     required this.registrationDate,
     required this.expirationDate,
@@ -25,6 +27,7 @@ class Member {
       'memberNumber': memberNumber,
       'password': password,
       'name': name,
+      'nickname': nickname,
       'phoneNumber': phoneNumber,
       'registrationDate': registrationDate.toIso8601String(),
       'expirationDate': expirationDate.toIso8601String(),
@@ -37,6 +40,7 @@ class Member {
       memberNumber: map['memberNumber'],
       password: map['password'],
       name: map['name'],
+      nickname: map['nickname'] ?? '',
       phoneNumber: map['phoneNumber'],
       registrationDate: DateTime.parse(map['registrationDate']),
       expirationDate: DateTime.parse(map['expirationDate']),
@@ -49,6 +53,7 @@ class Member {
       memberNumber: data['memberNumber'],
       password: data['password'],
       name: data['name'],
+      nickname: data['nickname'] ?? '',
       phoneNumber: data['phoneNumber'],
       registrationDate: _toDateTime(data['registrationDate']),
       expirationDate: _toDateTime(data['expirationDate']),
@@ -69,7 +74,9 @@ class Member {
   Map<String, dynamic> toFirestore() {
     return {
       'memberNumber': memberNumber,
+      'password': password,
       'name': name,
+      'nickname': nickname,
       'phoneNumber': phoneNumber,
       'memberState': memberState,
       'registrationDate': registrationDate,
@@ -172,11 +179,49 @@ class Comment {
   }
 }
 
+class BodyInfo {
+  final int memberNumber;
+  final double height;
+  final double weight;
+
+  BodyInfo({
+    required this.memberNumber,
+    required this.height,
+    required this.weight,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'memberNumber': memberNumber,
+      'height': height,
+      'weight': weight,
+    };
+  }
+
+  factory BodyInfo.fromMap(Map<String, dynamic> map) {
+    return BodyInfo(
+      memberNumber: map['memberNumber'],
+      height: map['height'],
+      weight: map['weight'],
+    );
+  }
+
+  factory BodyInfo.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return BodyInfo(
+      memberNumber: data['memberNumber'],
+      height: data['height'],
+      weight: data['weight'],
+    );
+  }
+}
+
 class DatabaseHelper {
   static late FirebaseFirestore _db = FirebaseFirestore.instance;
   static const String membersCollection = 'members';
   static const String postsCollection = 'posts';
   static const String commentsCollection = 'comments';
+  static const String bodyInfoCollection = 'bodyInfo';
 // Firestore 초기화
   static Future<void> initialize() async {
     await Firebase.initializeApp();
@@ -352,5 +397,65 @@ class DatabaseHelper {
         .where('title', isLessThanOrEqualTo: query + '\uf8ff')
         .get();
     return querySnapshot.docs.map((doc) => Commu.fromMap(doc.data())).toList();
+  }
+
+  //닉네임변경
+  static Future<void> updateNickname(
+      int memberNumber, String newNickname) async {
+    try {
+      await _db
+          .collection(membersCollection)
+          .doc(memberNumber.toString())
+          .update({'nickname': newNickname});
+      print('닉네임이 성공적으로 업데이트되었습니다.');
+    } catch (e) {
+      print('닉네임 업데이트 중 오류가 발생했습니다: $e');
+    }
+  }
+
+  //회원신체정보
+
+  static Future<void> updateBodyInfo(
+      int memberNumber, double height, double weight) async {
+    try {
+      await _db
+          .collection(bodyInfoCollection)
+          .doc(memberNumber.toString())
+          .set({
+        'memberNumber': memberNumber,
+        'height': height,
+        'weight': weight,
+      });
+      print('신체 정보가 성공적으로 업데이트되었습니다.');
+    } catch (e) {
+      print('신체 정보 업데이트 중 오류가 발생했습니다: $e');
+    }
+  }
+
+  static Future<BodyInfo?> getBodyInfo(int memberNumber) async {
+    final docSnapshot = await _db
+        .collection(bodyInfoCollection)
+        .doc(memberNumber.toString())
+        .get();
+    if (docSnapshot.exists) {
+      return BodyInfo.fromFirestore(docSnapshot);
+    }
+    return null;
+  }
+
+  //비밀번호변경
+  static Future<void> updatePassword(
+      int memberNumber, String newPassword) async {
+    try {
+      await _db
+          .collection(membersCollection)
+          .doc(memberNumber.toString())
+          .update({
+        'password': newPassword,
+      });
+      print('비밀번호가 성공적으로 업데이트되었습니다.');
+    } catch (e) {
+      print('비밀번호 업데이트 중 오류가 발생했습니다: $e');
+    }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../health.dart';
 
 class AddMemberDialog extends StatefulWidget {
@@ -17,8 +18,10 @@ class AddMemberDialog extends StatefulWidget {
 
 class _AddMemberDialogState extends State<AddMemberDialog> {
   late TextEditingController _nameController;
+  late TextEditingController _nicknameController;
   late TextEditingController _phoneNumberController;
-  late TextEditingController _memberStateController;
+  late TextEditingController
+      _memberStateController; // Add member state controller
   late DateTime _registrationDate;
   late DateTime _expirationDate;
 
@@ -26,8 +29,10 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController();
+    _nicknameController = TextEditingController();
     _phoneNumberController = TextEditingController();
-    _memberStateController = TextEditingController();
+    _memberStateController =
+        TextEditingController(); // Initialize member state controller
     _registrationDate = DateTime.now();
     _expirationDate = DateTime.now();
   }
@@ -48,6 +53,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
             decoration: InputDecoration(labelText: '전화번호'),
           ),
           TextField(
+            // TextField for member state
             controller: _memberStateController,
             decoration: InputDecoration(labelText: '회원권 상태'),
           ),
@@ -91,21 +97,19 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       ),
       actions: [
         ElevatedButton(
-          onPressed: () async {
+          onPressed: () {
             final member = Member(
               memberNumber: widget.currentMemberNumber,
-              password: _phoneNumberController.text,
+              password: _phoneNumberController.text, // 초기값 : 전화번호
               name: _nameController.text,
+              nickname: _nicknameController.text,
               phoneNumber: _phoneNumberController.text,
               registrationDate: _registrationDate,
               expirationDate: _expirationDate,
-              memberState: _memberStateController.text,
+              memberState: _memberStateController
+                  .text, // Get member state from controller
             );
-            await DatabaseHelper.insertMember(member); // 회원 추가
-            Navigator.pop(context); // 다이얼로그 닫기
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('회원이 추가되었습니다.')),
-            );
+            Navigator.pop(context, member);
             widget.reloadMembers(); // 회원 목록 다시 로드
           },
           child: Text('추가'),

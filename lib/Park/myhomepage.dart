@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health/Kim/exercise/exercise_guide.dart';
-import 'package:health/Kim/record/myrecord_page.dart';
+import 'package:health/Kim/record/myrecord_calendar.dart';
 import 'mypagescreen.dart';
 import 'homescreen.dart';
 import 'findid.dart';
@@ -9,7 +9,8 @@ import 'passwordchange.dart';
 import 'membership.dart';
 import '../Sin/community.dart';
 import '../Kim/exercise/exercise_guide.dart';
-import '../Kim/record/myrecord_page.dart';
+import '../Kim/record/myrecord_calendar.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -25,7 +26,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ),
     ExerciseGuidePage(),
     HomeScreen(),
-    MyRecordPage(selectedDate: DateTime.now()),
+    MyrecordCalendarPage(),
     MypageScreen(),
     FindId(),
     FindPassword(),
@@ -87,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: onTabTapped,
-        selectedItemColor: Colors.black,
+        selectedItemColor: Colors.lightGreen,
         unselectedItemColor: Colors.grey,
         selectedLabelStyle: TextStyle(
           fontWeight: FontWeight.bold,
@@ -99,23 +100,23 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.group),
+            icon: Icon(FontAwesomeIcons.userGroup),
             label: '커뮤니티',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center),
+            icon: Icon(FontAwesomeIcons.dumbbell),
             label: '운동기구',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(FontAwesomeIcons.home),
             label: '홈',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.date_range),
+            icon: Icon(FontAwesomeIcons.chartLine),
             label: '운동기록',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(FontAwesomeIcons.user),
             label: '마이페이지',
           ),
         ],

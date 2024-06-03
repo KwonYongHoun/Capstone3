@@ -146,6 +146,12 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "font_awesome_flutter",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/font_awesome_flutter-10.7.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "html",
       "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/html-0.15.4",
       "packageUri": "lib/",
@@ -482,7 +488,7 @@
       "languageVersion": "3.3"
     }
   ],
-  "generated": "2024-05-31T07:34:37.086898Z",
+  "generated": "2024-06-03T12:22:59.664840Z",
   "generator": "pub",
   "generatorVersion": "3.4.1",
   "flutterRoot": "file:///C:/Users/shinj/flutter",

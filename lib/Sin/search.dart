@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:health/Sin/post_detail.dart';
 import 'package:health/health.dart'; // Firebase Firestore 관련 패키지
@@ -9,16 +8,6 @@ class CustomSearchDelegate extends SearchDelegate<String> {
       FirebaseFirestore.instance.collection('posts');
 
   CustomSearchDelegate(List list); // Firebase posts 컬렉션 참조
-=======
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:health/Sin/post_detail.dart';
-import 'package:health/health.dart'; // Firebase Firestore 관련 패키지
-
-class CustomSearchDelegate extends SearchDelegate<String> {
-  final CollectionReference postsCollection =
-      FirebaseFirestore.instance.collection('posts');
-
-  CustomSearchDelegate(this.allPosts);
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -51,14 +40,14 @@ class CustomSearchDelegate extends SearchDelegate<String> {
       );
     }
 
-    return FutureBuilder<List<Commu>>(
-      future: DatabaseHelper.searchPosts(query),
+    return FutureBuilder<QuerySnapshot>(
+      future: postsCollection.get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('에러: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('검색 결과가 없습니다.'));
         } else {
           final filteredPosts = snapshot.data!.docs.where((doc) {
@@ -77,16 +66,19 @@ class CustomSearchDelegate extends SearchDelegate<String> {
             itemBuilder: (context, index) {
               final post = filteredPosts[index].data() as Map<String, dynamic>;
               return ListTile(
-                title: Text(post.title),
-                subtitle: Text(post.content),
+                title: Text(post['title']),
+                subtitle: Text(post['content']),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PostDetailPage(
-                        post: post,
-                        onCommentAdded: () {},
-                      ),
+                      builder: (context) {
+                        final commu = Commu.fromMap(post);
+                        return PostDetailPage(
+                          post: commu,
+                          onCommentAdded: () {},
+                        );
+                      },
                     ),
                   );
                 },
@@ -106,14 +98,14 @@ class CustomSearchDelegate extends SearchDelegate<String> {
       );
     }
 
-    return FutureBuilder<List<Commu>>(
-      future: DatabaseHelper.searchPosts(query),
+    return FutureBuilder<QuerySnapshot>(
+      future: postsCollection.get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('에러: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('추천 결과가 없습니다.'));
         } else {
           final suggestedPosts = snapshot.data!.docs.where((doc) {
@@ -135,7 +127,7 @@ class CustomSearchDelegate extends SearchDelegate<String> {
                 title: Text(post['title']),
                 subtitle: Text(post['content']),
                 onTap: () {
-                  query = post.title;
+                  query = post['title'];
                   showResults(context);
                 },
               );

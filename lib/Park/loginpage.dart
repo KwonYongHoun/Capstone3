@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../health.dart';
+import '../Sin/AuthProvider.dart';
 import 'myhomepage.dart';
 import 'findid.dart';
 import 'findpassword.dart';
+import '../Kwon/AdminMain.dart';
+
+// 입력된 아이디 비밀번호
+String enteredId = ''; // 아이디
+String enteredPassword = ''; // 비밀번호
+String enteredName = ''; // 이름
 
 class LoginPage extends StatefulWidget {
   @override
@@ -12,6 +21,15 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController idController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   String errorMessage = '';
+  @override
+  void initState() {
+    super.initState();
+    _initializeFirebase();
+  }
+
+  Future<void> _initializeFirebase() async {
+    await DatabaseHelper.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                 Padding(
                   padding: const EdgeInsets.only(left: 0),
                   child: Text(
-                    '초기 비밀번호 : 회원번호',
+                    '초기 비밀번호 : 전화번호',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -101,12 +119,40 @@ class _LoginPageState extends State<LoginPage> {
             ),
             SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () {
-                // 로그인 버튼 클릭 시 MyHomePage로 이동
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
+              onPressed: () async {
+                // Retrieve entered ID and password
+                enteredId = idController.text;
+                enteredPassword = passwordController.text;
+
+                // 관리자모드 실행 : Id admin / 비밀번호 master
+                if (enteredId == 'admin' && enteredPassword == 'master') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AdminModeHomePage()),
+                  );
+                  return;
+                }
+
+                // Query the database for a member with the entered ID and password
+                List<Member> members =
+                    await DatabaseHelper.IDCheck(enteredId, enteredPassword);
+
+                if (members.isNotEmpty) {
+                  // Login successful
+                  enteredName = members.first.name; // 이름도 같이 반환하기
+
+                  // AuthProvider에 로그인된 사용자 정보 설정
+                  Provider.of<AuthProvider>(context, listen: false)
+                      .setLoggedInMember(members.first);
+
+                  Navigator.pushReplacementNamed(context, '/home');
+                } else {
+                  // Invalid ID or password
+                  setState(() {
+                    errorMessage = '아이디 또는 비밀번호가 올바르지 않습니다.';
+                  });
+                }
               },
               child: Padding(
                 padding: const EdgeInsets.all(15.0),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../member.dart';
+import '../health.dart';
 import 'AddMember.dart';
 import 'MemberDetail.dart';
 import 'SearchMember.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MemberManagementPage extends StatefulWidget {
   @override
@@ -11,7 +12,6 @@ class MemberManagementPage extends StatefulWidget {
 
 class _MemberManagementPageState extends State<MemberManagementPage> {
   List<Member> _members = [];
-
   int _currentMemberNumber = 0; // 현재 회원 번호를 저장하는 변수
 
   @override
@@ -22,7 +22,10 @@ class _MemberManagementPageState extends State<MemberManagementPage> {
   }
 
   Future<void> _loadMembers() async {
-    List<Member> members = await DatabaseHelper.getMembers();
+    final snapshot =
+        await FirebaseFirestore.instance.collection('members').get();
+    final List<Member> members =
+        snapshot.docs.map((doc) => Member.fromFirestore(doc)).toList();
     setState(() {
       _members = members;
     });
@@ -30,16 +33,34 @@ class _MemberManagementPageState extends State<MemberManagementPage> {
 
   // 현재 회원 번호를 계산하는 메서드
   void _calculateMemberNumber() async {
-    // 현재 날짜로부터 회원번호를 생성합니다.
     final now = DateTime.now();
-    // 가장 최근의 회원 번호를 데이터베이스에서 가져옵니다.
-    List<Member> members = await DatabaseHelper.getMembers();
-    if (members.isEmpty) {
-      _currentMemberNumber = int.parse(
-          '${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
+    final snapshot = await FirebaseFirestore.instance
+        .collection('members')
+        .orderBy('memberNumber', descending: true)
+        .limit(1)
+        .get();
+    if (snapshot.docs.isEmpty) {
+      setState(() {
+        _currentMemberNumber = int.parse(
+            '${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
+      });
     } else {
-      // 데이터베이스에 회원이 있는 경우 가장 최근의 회원 번호를 가져옵니다.
-      _currentMemberNumber = members.last.memberNumber + 1;
+      final lastMember = Member.fromFirestore(snapshot.docs.first);
+      final lastRegistrationDate = lastMember.registrationDate;
+      if (lastRegistrationDate.year != now.year ||
+          lastRegistrationDate.month != now.month ||
+          lastRegistrationDate.day != now.day) {
+        // 오늘 날짜와 마지막 등록일이 다른 경우
+        setState(() {
+          _currentMemberNumber = int.parse(
+              '${now.year.toString().substring(2)}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}000');
+        });
+      } else {
+        // 오늘 날짜와 마지막 등록일이 같은 경우
+        setState(() {
+          _currentMemberNumber = lastMember.memberNumber + 1;
+        });
+      }
     }
   }
 
@@ -147,7 +168,9 @@ class _MemberManagementPageState extends State<MemberManagementPage> {
             ),
           );
           if (member != null) {
-            DatabaseHelper.insertMember(member);
+            await FirebaseFirestore.instance
+                .collection('members')
+                .add(member.toFirestore());
             _loadMembers();
             _currentMemberNumber++; // 회원 추가 후 회원 번호 증가
           }

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'loginpage.dart'; // enteredId 변수가 여기서 선언된 것으로 가정
+import '../Kwon/Congestion.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -6,8 +9,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String uniqueUserId = 'sku12340001';
-  String congestion = '여유'; // '보통'을 '여유'로 변경
+  String congestion = congestionChange;
+  String Id = enteredId;
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +40,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 2),
                   ),
+                  child: Center(
+                    child: QrImageView(
+                      data: Id,
+                      version: QrVersions.auto,
+                      size: 200.0,
+                    ),
+                  ),
                 ),
                 Text(
-                  '회원번호 : $uniqueUserId',
+                  '회원번호:$Id',
                   style: TextStyle(
                     fontSize: 18,
                     decoration: TextDecoration.underline,

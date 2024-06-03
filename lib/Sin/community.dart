@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import '../health.dart';
 import 'posts_list.dart';
 import 'search.dart'; // CustomSearchDelegate import
+<<<<<<< HEAD
 import 'ScrapedList.dart'; // ScrapedPostsListPage import 추가
+=======
+>>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
 
 class CommunityPage extends StatelessWidget {
   final List<Commu> allPosts; // 모든 게시물 리스트
@@ -30,6 +33,7 @@ class CommunityPage extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.bookmark),
               onPressed: () {
+<<<<<<< HEAD
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -37,6 +41,9 @@ class CommunityPage extends StatelessWidget {
                         ScrapedPostsListPage(), // 스크랩된 게시물 목록 화면으로 이동
                   ),
                 );
+=======
+                // 스크랩 기능 추가
+>>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
               },
             ),
           ],

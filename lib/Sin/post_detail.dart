@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../health.dart'; // DatabaseHelper, Commu, Comment 클래스 import
 import 'package:provider/provider.dart';
+<<<<<<< HEAD
+=======
+import '../health.dart';
+>>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
 import '../Sin/AuthProvider.dart';
 
 class PostDetailPage extends StatefulWidget {
@@ -27,12 +31,16 @@ class _PostDetailPageState extends State<PostDetailPage> {
   void initState() {
     super.initState();
     _commentsFuture = _fetchComments();
+<<<<<<< HEAD
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final loggedInMember = authProvider.loggedInMember;
     _isScrappedFuture = loggedInMember != null
         ? DatabaseHelper.isPostScrapped(
             loggedInMember.memberNumber.toString(), widget.post.postID!)
         : Future.value(false);
+=======
+    _likeCount = widget.post.likeCount ?? 0;
+>>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
   }
 
   Future<List<Comment>> _fetchComments() async {
@@ -46,10 +54,16 @@ class _PostDetailPageState extends State<PostDetailPage> {
       String commentID = "c" + currentTimeMillis;
 
       Comment newComment = Comment(
+<<<<<<< HEAD
         commentID: commentID,
         postID: postID,
         memberNumber: loggedInMember.memberNumber.toString(),
         name: _isAnonymous ? '익명' : loggedInMember.name,
+=======
+        commentID: "",
+        postID: postID,
+        memberNumber: loggedInMember.memberNumber.toString(), // 예시로 사용한 회원 번호
+>>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
         content: _commentController.text,
         createdAt: DateTime.now(),
         isAnonymous: _isAnonymous,
@@ -204,6 +218,34 @@ class _PostDetailPageState extends State<PostDetailPage> {
     });
   }
 
+  void _reportPost() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('신고'),
+        content: Text('신고하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('아니오'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              int currentReportCount =
+                  await DatabaseHelper.getReportCount(widget.post.postID!);
+              await DatabaseHelper.updateReportCount(
+                  widget.post.postID!, currentReportCount + 1);
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text('신고가 접수되었습니다.')));
+            },
+            child: Text('예'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -248,7 +290,11 @@ class _PostDetailPageState extends State<PostDetailPage> {
             },
           ),
           IconButton(
+<<<<<<< HEAD
             icon: Icon(Icons.report_problem),
+=======
+            icon: Icon(Icons.report_problem), // 싸이렌 아이콘 사용
+>>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
             onPressed: _reportPost,
           ),
         ],
@@ -258,9 +304,24 @@ class _PostDetailPageState extends State<PostDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+<<<<<<< HEAD
             Text(
               widget.post.title ?? '제목 없음',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+=======
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.post.title,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  widget.post.name ?? 'Unknown',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ],
+>>>>>>> 59bb430b058eb564a5b47444ee70f97f1eea8814
             ),
             SizedBox(height: 10),
             Text(widget.post.content),

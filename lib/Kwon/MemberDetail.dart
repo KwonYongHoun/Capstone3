@@ -100,7 +100,7 @@ class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
       ),
       actions: [
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             final updatedMember = Member(
               memberNumber: widget.member.memberNumber,
               password: _passwordController.text,
@@ -110,7 +110,7 @@ class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
               expirationDate: _expirationDate,
               memberState: _memberStateController.text,
             );
-            DatabaseHelper.updateMember(updatedMember); // 기존 회원 정보 업데이트
+            await DatabaseHelper.updateMember(updatedMember); // 기존 회원 정보 업데이트
             Navigator.pop(context); // 다이얼로그 닫기
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('회원 정보가 업데이트되었습니다.')),

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../Sin/AuthProvider.dart';
+import '../health.dart';
+import 'loginpage.dart';
 
 class PasswordChangePage extends StatefulWidget {
   const PasswordChangePage({Key? key}) : super(key: key);
@@ -12,18 +16,59 @@ class _PasswordChangePageState extends State<PasswordChangePage> {
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
 
-  void _changePassword() {
-    // TODO: 여기에 비밀번호 변경 로직을 추가하세요. 예를 들어, 서버에 요청을 보낼 수 있습니다.
+  void _changePassword() async {
+    String oldPassword = _oldPasswordController.text;
+    String newPassword = _newPasswordController.text;
+    // enteredId 값을 디버깅하기 위해 출력
+    print('enteredId: $enteredId');
 
-    // 비밀번호 변경 성공 가정
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('비밀번호가 변경되었습니다.')),
-    );
+    // enteredId가 숫자로 변환 가능한지 확인
+    int? memberId = int.tryParse(enteredId);
+    if (memberId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('잘못된 사용자 ID입니다.')),
+      );
+      return;
+    }
 
-    // 비밀번호 변경 성공 후, 일정 시간 후에 이전 화면으로 자동으로 돌아가기
-    Future.delayed(Duration(seconds: 0), () {
-      Navigator.of(context).pop(); // 현재 페이지 닫기
-    });
+    try {
+      // 현재 사용자의 정보를 가져옵니다.
+      Member? currentUser = await DatabaseHelper.getMember(memberId);
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('사용자 정보를 찾을 수 없습니다.')),
+        );
+        return;
+      }
+
+      if (_formKey.currentState!.validate()) {
+        // 기존 비밀번호가 현재 비밀번호 또는 초기 전화번호와 일치하는지 확인합니다.
+        if (oldPassword == currentUser.password ||
+            oldPassword == currentUser.phoneNumber) {
+          // 비밀번호 변경
+          await DatabaseHelper.updatePassword(
+              currentUser.memberNumber, newPassword);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('비밀번호가 변경되었습니다.')),
+          );
+
+          // 비밀번호 변경 성공 후, 로그인 페이지로 이동
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => LoginPage()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('기존 비밀번호가 올바르지 않습니다.')),
+          );
+        }
+      }
+    } catch (e) {
+      print('예외 발생: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('오류가 발생했습니다. 다시 시도해 주세요.')),
+      );
+    }
   }
 
   @override
@@ -61,6 +106,12 @@ class _PasswordChangePageState extends State<PasswordChangePage> {
                   hintStyle: TextStyle(color: Colors.grey),
                 ),
                 obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '기존 비밀번호를 입력해 주세요.';
+                  }
+                  return null;
+                },
               ),
               SizedBox(
                 height: 30.0,
@@ -84,6 +135,12 @@ class _PasswordChangePageState extends State<PasswordChangePage> {
                   hintStyle: TextStyle(color: Colors.grey),
                 ),
                 obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '새 비밀번호를 입력해 주세요.';
+                  }
+                  return null;
+                },
               ),
               SizedBox(
                 height: 20.0,

@@ -154,8 +154,8 @@ class PostWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final result = await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => PostDetailPage(
@@ -164,6 +164,9 @@ class PostWidget extends StatelessWidget {
             ),
           ),
         );
+        if (result == true) {
+          onPostUpdated();
+        }
       },
       child: Container(
         padding: EdgeInsets.all(10),

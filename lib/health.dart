@@ -85,7 +85,6 @@ class Commu {
   final String content;
   final DateTime createdAt;
   int? commentCount;
-  int? likeCount;
   int? reportCount;
   DateTime? timestamp;
   String? name;
@@ -98,7 +97,6 @@ class Commu {
     required this.content,
     required this.createdAt,
     this.commentCount,
-    this.likeCount,
     this.reportCount,
     this.timestamp,
     this.name,
@@ -113,7 +111,6 @@ class Commu {
       'content': content,
       'createdAt': createdAt.toIso8601String(),
       'commentCount': commentCount,
-      'likeCount': likeCount,
       'reportCount': reportCount,
       'timestamp': timestamp?.toIso8601String(),
       'name': name,
@@ -129,7 +126,6 @@ class Commu {
       content: map['content'],
       createdAt: DateTime.parse(map['createdAt']),
       commentCount: map['commentCount'],
-      likeCount: map['likeCount'],
       reportCount: map['reportCount'],
       name: map['name'],
     );
@@ -142,6 +138,9 @@ class Comment {
   final String memberNumber;
   final String content;
   final DateTime createdAt;
+  final String name;
+  final bool isAnonymous;
+  int reportCount; // 신고 수 추가
 
   Comment({
     required this.commentID,
@@ -149,6 +148,9 @@ class Comment {
     required this.memberNumber,
     required this.content,
     required this.createdAt,
+    required this.name,
+    required this.isAnonymous,
+    this.reportCount = 0, // 기본값은 0으로 설정
   });
 
   Map<String, dynamic> toMap() {
@@ -158,6 +160,8 @@ class Comment {
       'memberNumber': memberNumber,
       'content': content,
       'createdAt': createdAt.toIso8601String(),
+      'name': isAnonymous ? 'Anonymous' : name,
+      'isAnonymous': isAnonymous,
     };
   }
 
@@ -168,6 +172,8 @@ class Comment {
       memberNumber: map['memberNumber'],
       content: map['content'],
       createdAt: DateTime.parse(map['createdAt']),
+      name: map['isAnonymous'] ? 'Anonymous' : map['name'],
+      isAnonymous: map['isAnonymous'],
     );
   }
 }
@@ -177,7 +183,9 @@ class DatabaseHelper {
   static const String membersCollection = 'members';
   static const String postsCollection = 'posts';
   static const String commentsCollection = 'comments';
-// Firestore 초기화
+  static const String scrapsCollection = 'scraps';
+
+  // Firestore 초기화
   static Future<void> initialize() async {
     await Firebase.initializeApp();
     _db = FirebaseFirestore.instance;
@@ -283,9 +291,12 @@ class DatabaseHelper {
     await _db.collection(postsCollection).doc(uniqueID).set(post.toMap());
   }
 
-// 댓글 삽입
+  // 댓글 삽입
   static Future<void> insertComment(Comment comment) async {
-    await _db.collection(commentsCollection).add(comment.toMap());
+    await _db
+        .collection(commentsCollection)
+        .doc(comment.commentID)
+        .set(comment.toMap());
   }
 
   // 특정 게시물의 댓글 가져오기
@@ -299,14 +310,8 @@ class DatabaseHelper {
         .toList();
   }
 
-  // 모든 게시물 가져오기
-  static Future<List<Commu>> getPosts() async {
-    final querySnapshot = await _db.collection(postsCollection).get();
-    return querySnapshot.docs.map((doc) => Commu.fromMap(doc.data())).toList();
-  }
-
-  // 특정 게시물의 댓글 수 가져오기
-  static Future<int> _getCommentCount(String postID) async {
+  // 댓글 수 가져오기
+  static Future<int> getCommentCount(String postID) async {
     final querySnapshot = await _db
         .collection(commentsCollection)
         .where('postID', isEqualTo: postID)
@@ -314,27 +319,42 @@ class DatabaseHelper {
     return querySnapshot.docs.length;
   }
 
-  // 특정 게시물의 좋아요 수 가져오기
-  static Future<int> getLikeCount(String postID) async {
-    final docSnapshot = await _db.collection(postsCollection).doc(postID).get();
-    if (docSnapshot.exists) {
-      return docSnapshot.data()!['likeCount'];
-    }
-    return 0;
-  }
-
-  // 특정 게시물의 좋아요 수 업데이트
-  static Future<void> updateLikeCount(String postID, int newLikeCount) async {
+  // 댓글 수 업데이트
+  static Future<void> updateCommentCount(
+      String postID, int newCommentCount) async {
     await _db
         .collection(postsCollection)
         .doc(postID)
-        .update({'likeCount': newLikeCount});
+        .update({'commentCount': newCommentCount});
   }
 
-  // 게시물 삭제
+  // 모든 게시물 가져오기
+  static Future<List<Commu>> getPosts() async {
+    final querySnapshot = await _db.collection(postsCollection).get();
+    return querySnapshot.docs.map((doc) => Commu.fromMap(doc.data())).toList();
+  }
+
+  // 댓글 삭제
+  static Future<void> deleteComment(String commentID) async {
+    await _db.collection(commentsCollection).doc(commentID).delete();
+  }
+
+  // 댓글 신고
+  static Future<void> reportComment(String commentID) async {
+    final docSnapshot =
+        await _db.collection(commentsCollection).doc(commentID).get();
+    if (docSnapshot.exists) {
+      int currentReportCount = docSnapshot.data()!['reportCount'] ?? 0;
+      await _db
+          .collection(commentsCollection)
+          .doc(commentID)
+          .update({'reportCount': currentReportCount + 1});
+    }
+  }
+
+  // 게시물 삭제 메서드 수정
   static Future<void> deletePost(String postID) async {
     await _db.collection(postsCollection).doc(postID).delete();
-    // 해당 게시물의 댓글도 삭제
     final querySnapshot = await _db
         .collection(commentsCollection)
         .where('postID', isEqualTo: postID)
@@ -352,5 +372,69 @@ class DatabaseHelper {
         .where('title', isLessThanOrEqualTo: query + '\uf8ff')
         .get();
     return querySnapshot.docs.map((doc) => Commu.fromMap(doc.data())).toList();
+  }
+
+  //스크랩 추가
+  static Future<void> addScrap(String memberNumber, String postID) async {
+    await _db.collection('scraps').add({
+      'memberNumber': memberNumber,
+      'postID': postID,
+      'scrapDate': DateTime.now().toIso8601String(),
+    });
+  }
+
+  // 특정 사용자의 스크랩한 게시물 가져오기
+  static Future<List<Commu>> getScrappedPosts(String memberNumber) async {
+    final querySnapshot = await _db
+        .collection('scraps')
+        .where('memberNumber', isEqualTo: memberNumber)
+        .get();
+    List<String> postIDs = querySnapshot.docs
+        .map((doc) => doc.data()['postID'] as String)
+        .toList();
+    if (postIDs.isEmpty) return [];
+    final postsQuery = await _db
+        .collection('posts') // 게시물 정보가 저장된 컬렉션
+        .where(FieldPath.documentId, whereIn: postIDs)
+        .get();
+    return postsQuery.docs.map((doc) => Commu.fromMap(doc.data())).toList();
+  }
+
+  // 스크랩 삭제
+  static Future<void> removeScrap(String memberNumber, String postID) async {
+    final querySnapshot = await _db
+        .collection('scraps')
+        .where('memberNumber', isEqualTo: memberNumber)
+        .where('postID', isEqualTo: postID)
+        .get();
+    for (final doc in querySnapshot.docs) {
+      await _db.collection('scraps').doc(doc.id).delete();
+    }
+  }
+
+  static Future<bool> isPostScrapped(String memberNumber, String postID) async {
+    final querySnapshot = await _db
+        .collection(scrapsCollection)
+        .where('memberNumber', isEqualTo: memberNumber)
+        .where('postID', isEqualTo: postID)
+        .get();
+    return querySnapshot.docs.isNotEmpty;
+  }
+
+  static Future<Comment?> getComment(String commentID) async {
+    final docSnapshot =
+        await _db.collection(commentsCollection).doc(commentID).get();
+    if (docSnapshot.exists) {
+      return Comment.fromMap(docSnapshot.data()!);
+    }
+    return null;
+  }
+
+  // 댓글 신고 수 업데이트
+  static Future<void> updateCommentReportCount(
+      String commentID, int newReportCount) async {
+    await _db.collection(commentsCollection).doc(commentID).update({
+      'reportCount': newReportCount,
+    });
   }
 }

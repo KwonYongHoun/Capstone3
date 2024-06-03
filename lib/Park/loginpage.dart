@@ -21,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController idController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   String errorMessage = '';
+
   @override
   void initState() {
     super.initState();
@@ -116,13 +117,13 @@ class _LoginPageState extends State<LoginPage> {
                       color: Color.fromARGB(255, 112, 203, 245), width: 2.0),
                 ),
               ),
+              obscureText: true,
             ),
             SizedBox(height: 40),
             ElevatedButton(
               onPressed: () async {
-                // Retrieve entered ID and password
-                enteredId = idController.text;
-                enteredPassword = passwordController.text;
+                String enteredId = idController.text;
+                String enteredPassword = passwordController.text;
 
                 // 관리자모드 실행 : Id admin / 비밀번호 master
                 if (enteredId == 'admin' && enteredPassword == 'master') {
@@ -140,11 +141,8 @@ class _LoginPageState extends State<LoginPage> {
 
                 if (members.isNotEmpty) {
                   // Login successful
-                  enteredName = members.first.name; // 이름도 같이 반환하기
-
-                  // AuthProvider에 로그인된 사용자 정보 설정
                   Provider.of<AuthProvider>(context, listen: false)
-                      .setLoggedInMember(members.first);
+                      .setAuthInfo(enteredId, enteredPassword);
 
                   Navigator.pushReplacementNamed(context, '/home');
                 } else {

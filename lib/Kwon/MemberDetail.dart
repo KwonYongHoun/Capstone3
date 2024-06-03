@@ -17,6 +17,7 @@ class MemberDetailsDialog extends StatefulWidget {
 
 class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
   late TextEditingController _nameController;
+  late TextEditingController _nicknameController;
   late TextEditingController _phoneNumberController;
   late TextEditingController _memberStateController;
   late TextEditingController _passwordController;
@@ -27,6 +28,7 @@ class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.member.name);
+    _nicknameController = TextEditingController(text: widget.member.nickname);
     _phoneNumberController =
         TextEditingController(text: widget.member.phoneNumber);
     _memberStateController =
@@ -100,17 +102,18 @@ class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
       ),
       actions: [
         ElevatedButton(
-          onPressed: () async {
+          onPressed: () {
             final updatedMember = Member(
               memberNumber: widget.member.memberNumber,
               password: _passwordController.text,
               name: _nameController.text,
+              nickname: _nicknameController.text,
               phoneNumber: _phoneNumberController.text,
               registrationDate: _registrationDate,
               expirationDate: _expirationDate,
               memberState: _memberStateController.text,
             );
-            await DatabaseHelper.updateMember(updatedMember); // 기존 회원 정보 업데이트
+            DatabaseHelper.updateMember(updatedMember); // 기존 회원 정보 업데이트
             Navigator.pop(context); // 다이얼로그 닫기
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('회원 정보가 업데이트되었습니다.')),

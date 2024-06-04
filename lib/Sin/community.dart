@@ -59,7 +59,7 @@ class CommunityPage extends StatelessWidget {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.only(top: 10), // 상단바와 자유게시판 사이 간격 조정
+        padding: EdgeInsets.only(top: 0), // 상단바와 자유게시판 사이 간격 조정
         child: Column(
           children: [
             _buildBoardButton(context, "자유게시판", 'assets/images/b.b_1.png', () {

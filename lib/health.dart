@@ -91,6 +91,7 @@ class Commu {
   final String title;
   final String content;
   final DateTime createdAt;
+  final bool isAnonymous;
   int? commentCount;
   int? reportCount;
   DateTime? timestamp;
@@ -103,6 +104,7 @@ class Commu {
     required this.title,
     required this.content,
     required this.createdAt,
+    required this.isAnonymous,
     this.commentCount,
     this.reportCount,
     this.timestamp,
@@ -120,7 +122,8 @@ class Commu {
       'commentCount': commentCount,
       'reportCount': reportCount,
       'timestamp': timestamp?.toIso8601String(),
-      'name': name,
+      'name': isAnonymous ? 'Anonymous' : name,
+      'isAnonymous': isAnonymous,
     };
   }
 
@@ -134,7 +137,8 @@ class Commu {
       createdAt: DateTime.parse(map['createdAt']),
       commentCount: map['commentCount'],
       reportCount: map['reportCount'],
-      name: map['name'],
+      name: map['isAnonymous'] ? 'Anonymous' : map['name'],
+      isAnonymous: map['isAnonymous'],
     );
   }
 }
@@ -337,11 +341,13 @@ class DatabaseHelper {
   }
 
   // 댓글 삽입
+  // 댓글 삽입 메서드 수정
   static Future<void> insertComment(Comment comment) async {
     await _db
         .collection(commentsCollection)
         .doc(comment.commentID)
         .set(comment.toMap());
+    await _updateCommentCount(comment.postID);
   }
 
   // 특정 게시물의 댓글 가져오기
@@ -355,7 +361,7 @@ class DatabaseHelper {
         .toList();
   }
 
-  // 댓글 수 가져오기
+  // 댓글 수 가져오기 메서드
   static Future<int> getCommentCount(String postID) async {
     final querySnapshot = await _db
         .collection(commentsCollection)
@@ -364,13 +370,13 @@ class DatabaseHelper {
     return querySnapshot.docs.length;
   }
 
-  // 댓글 수 업데이트
-  static Future<void> updateCommentCount(
-      String postID, int newCommentCount) async {
+  // 댓글 수 업데이트 메서드 추가
+  static Future<void> _updateCommentCount(String postID) async {
+    final commentCount = await getCommentCount(postID);
     await _db
         .collection(postsCollection)
         .doc(postID)
-        .update({'commentCount': newCommentCount});
+        .update({'commentCount': commentCount});
   }
 
   // 모든 게시물 가져오기
@@ -379,9 +385,14 @@ class DatabaseHelper {
     return querySnapshot.docs.map((doc) => Commu.fromMap(doc.data())).toList();
   }
 
-  // 댓글 삭제
   static Future<void> deleteComment(String commentID) async {
-    await _db.collection(commentsCollection).doc(commentID).delete();
+    final docSnapshot =
+        await _db.collection(commentsCollection).doc(commentID).get();
+    if (docSnapshot.exists) {
+      final postID = docSnapshot.data()!['postID'];
+      await _db.collection(commentsCollection).doc(commentID).delete();
+      await _updateCommentCount(postID);
+    }
   }
 
   // 댓글 신고

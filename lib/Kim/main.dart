@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:health/Kim/exercise/exercise_guide.dart';
-import 'package:health/Kim/record/myrecord_calendar.dart';
+//import 'package:health/Kim/exercise/exercise_guide.dart';
+//import 'package:health/Kim/record/myrecord_calendar.dart';
+import '../Kim/myrecord/myrecord_calendar.dart';
+import '../Kim//exercise/exercise_guide.dart';
 
 // main.dart는 메뉴바(창)
 class MyApp extends StatelessWidget {
@@ -83,4 +85,8 @@ class MyRecordPage extends StatelessWidget {
       ),
     );
   }
+}
+
+void main() {
+  runApp(const MyApp());
 }

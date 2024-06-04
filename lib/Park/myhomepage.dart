@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health/Kim/exercise/exercise_guide.dart';
-import 'package:health/Kim/record/myrecord_calendar.dart';
+import '../Kim/myrecord/myrecord_calendar.dart';
 import 'mypagescreen.dart';
 import 'homescreen.dart';
 import 'findid.dart';
@@ -9,7 +9,7 @@ import 'passwordchange.dart';
 import 'membership.dart';
 import '../Sin/community.dart';
 import '../Kim/exercise/exercise_guide.dart';
-import '../Kim/record/myrecord_calendar.dart';
+import '../Kim/myrecord/myrecord_calendar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class MyHomePage extends StatefulWidget {

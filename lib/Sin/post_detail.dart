@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'Commu.dart'; // DatabaseHelper와 Commu, Comment 클래스 import
+import '../health.dart'; // DatabaseHelper, Commu, Comment 클래스 import
+import 'package:provider/provider.dart';
+import '../health.dart';
+import '../Sin/AuthProvider.dart';
 
 class PostDetailPage extends StatefulWidget {
   final Commu post;
@@ -28,12 +31,12 @@ class _PostDetailPageState extends State<PostDetailPage> {
     return DatabaseHelper.getCommentsByPostID(widget.post.postID!);
   }
 
-  void _addComment() async {
+  void _addComment(String postID, Member loggedInMember) async {
     if (_commentController.text.isNotEmpty) {
       Comment newComment = Comment(
-        commentID: null,
-        postID: widget.post.postID!,
-        memberNumber: 1, // 예시로 1번 회원 사용
+        commentID: "",
+        postID: postID,
+        memberNumber: loggedInMember.memberNumber.toString(), // 예시로 사용한 회원 번호
         content: _commentController.text,
         createdAt: DateTime.now(),
       );
@@ -91,6 +94,9 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final loggedInMember = authProvider.loggedInMember;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('게시물 상세보기'),
@@ -173,7 +179,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(child: Text('No comments available.'));
+                    return Center(child: Text('댓글이 없습니다.'));
                   } else {
                     final comments = snapshot.data!;
                     return ListView.builder(
@@ -205,7 +211,9 @@ class _PostDetailPageState extends State<PostDetailPage> {
                 ),
                 IconButton(
                   icon: Icon(Icons.send),
-                  onPressed: _addComment,
+                  onPressed: () {
+                    _addComment(widget.post.postID!, loggedInMember!);
+                  },
                 ),
               ],
             ),

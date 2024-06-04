@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-import 'Commu.dart';
+import 'package:provider/provider.dart';
+import '../health.dart';
+import '../Sin/AuthProvider.dart';
+import 'dart:math';
 
 class WritePage extends StatefulWidget {
   @override
@@ -14,39 +15,47 @@ class _WritePageState extends State<WritePage> {
   String _selectedCategory = '자유게시판'; // Default category
   bool _isAnonymous = false; // Anonymous flag
 
-  // Function to add a post to the database
-  Future<void> addPostToDatabase() async {
-    // SQLite database open
-    Database db = await DatabaseHelper.initDatabase();
-
+  Future<void> _addPostToDatabase(Member loggedInMember) async {
     // Current time
     DateTime now = DateTime.now();
+    // 익명 여부에 따른 작성자 설정
+    String authorName = _isAnonymous ? '익명' : loggedInMember.name;
 
-    // Author name setting (based on anonymous flag)
-    String authorName =
-        _isAnonymous ? '익명' : '회원이름'; // Replace with actual user name
-
-    // Create Commu instance
+    // Commu 객체 생성
     Commu newPost = Commu(
+      postID: '', // 초기값을 빈 문자열로 설정
       type: _selectedCategory,
       title: _titleController.text,
       content: _contentController.text,
       createdAt: now,
       name: authorName,
+      fk_memberNumber: loggedInMember.memberNumber.toString(),
     );
 
-    // Insert the post into the database
-    await DatabaseHelper.insertPost(newPost);
-
-    // Close the database
-    await db.close();
-
-    // Close the write page and navigate back to the previous page
-    Navigator.pop(context as BuildContext);
+    try {
+      // Firestore에 글 추가
+      await DatabaseHelper.insertPost(newPost);
+      // 성공적으로 게시되었음을 알리는 스낵바 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('글이 성공적으로 게시되었습니다.')),
+      );
+      // 글 작성 페이지 닫기
+      Navigator.pop(context);
+    } catch (e) {
+      // 오류 발생 시 스낵바 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('글 게시 중 오류가 발생했습니다.')),
+      );
+      // 콘솔에 오류 메시지 출력
+      print('글 게시 중 오류 발생: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final loggedInMember = authProvider.loggedInMember;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -119,7 +128,15 @@ class _WritePageState extends State<WritePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          addPostToDatabase();
+          if (loggedInMember != null) {
+            // 현재 로그인된 회원의 정보를 이용하여 글 작성
+            _addPostToDatabase(loggedInMember);
+          } else {
+            // 로그인되지 않은 경우에 대한 처리
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('로그인 후에 글을 작성할 수 있습니다.')),
+            );
+          }
         },
         label: Text('완료'),
         icon: Icon(Icons.done),

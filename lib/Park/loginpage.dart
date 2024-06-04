@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../health.dart';
+import '../Sin/AuthProvider.dart';
 import 'myhomepage.dart';
 import 'findid.dart';
 import 'findpassword.dart';
-import '../member.dart';
 import '../Kwon/AdminMain.dart';
 
-//입력된 아이디 비밀번호
-String enteredId = ''; //아이디
-String enteredPassword = ''; //버밀번호
-String enteredName = ''; //이름
+// 입력된 아이디 비밀번호
+String enteredId = ''; // 아이디
+String enteredPassword = ''; // 비밀번호
+String enteredName = ''; // 이름
 
 class LoginPage extends StatefulWidget {
   @override
@@ -19,6 +21,15 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController idController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   String errorMessage = '';
+  @override
+  void initState() {
+    super.initState();
+    _initializeFirebase();
+  }
+
+  Future<void> _initializeFirebase() async {
+    await DatabaseHelper.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,26 +124,29 @@ class _LoginPageState extends State<LoginPage> {
                 enteredId = idController.text;
                 enteredPassword = passwordController.text;
 
-                //관리자모드 실행 : Id admin / 비밀번호 master
+                // 관리자모드 실행 : Id admin / 비밀번호 master
                 if (enteredId == 'admin' && enteredPassword == 'master') {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => AdminModeHomePage()),
                   );
+                  return;
                 }
 
-                // Query the database for a member with the entered ID
+                // Query the database for a member with the entered ID and password
                 List<Member> members =
                     await DatabaseHelper.IDCheck(enteredId, enteredPassword);
 
                 if (members.isNotEmpty) {
                   // Login successful
                   enteredName = members.first.name; // 이름도 같이 반환하기
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyHomePage()),
-                  );
+
+                  // AuthProvider에 로그인된 사용자 정보 설정
+                  Provider.of<AuthProvider>(context, listen: false)
+                      .setLoggedInMember(members.first);
+
+                  Navigator.pushReplacementNamed(context, '/home');
                 } else {
                   // Invalid ID or password
                   setState(() {

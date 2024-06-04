@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'Commu.dart'; // DatabaseHelper와 Commu 클래스 import
+import 'package:provider/provider.dart';
+import '../health.dart'; // DatabaseHelper와 Commu 클래스 import
 import 'post_detail.dart'; // 게시물 상세 페이지 import
 import 'WPage.dart'; // 글쓰기 페이지 import
+import '../Sin/AuthProvider.dart'; // AuthProvider import
 
 class PostsListPage extends StatefulWidget {
   final String boardType;
@@ -22,7 +24,7 @@ class _PostsListPageState extends State<PostsListPage> {
   }
 
   Future<List<Commu>> _fetchPosts() async {
-    await DatabaseHelper.initDatabase();
+    await DatabaseHelper.initialize();
     return DatabaseHelper.getPostsByType(widget.boardType);
   }
 
@@ -59,6 +61,9 @@ class _PostsListPageState extends State<PostsListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final loggedInMember = authProvider.loggedInMember;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.boardType),
@@ -78,23 +83,27 @@ class _PostsListPageState extends State<PostsListPage> {
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(child: Text('No posts available.'));
+                    return Center(child: Text('게시물이 없습니다.'));
                   } else {
                     final posts = snapshot.data!;
                     return ListView.builder(
                       itemCount: posts.length,
                       itemBuilder: (context, index) {
                         final post = posts[index];
+                        final formattedTimestamp =
+                            '${post.createdAt.year}-${post.createdAt.month}-${post.createdAt.day} ${post.createdAt.hour}:${post.createdAt.minute}';
                         return Column(
                           children: [
                             PostWidget(
                               post: post,
                               onPostUpdated: _refreshPosts,
+                              commentCount: post.commentCount ?? 0,
+                              title: post.title ?? '제목 없음',
+                              formattedTimestamp: formattedTimestamp,
                             ),
                             Divider(
-                              color:
-                                  Color.fromARGB(255, 255, 255, 255), // 선의 색상
-                              height: 10, // 선의 높이
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              height: 10,
                             ),
                           ],
                         );
@@ -107,20 +116,22 @@ class _PostsListPageState extends State<PostsListPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WritePage(), // 글쓰기 페이지로 이동
-            ),
-          ).then((_) {
-            _refreshPosts(); // 글쓰기 페이지에서 돌아오면 목록을 갱신합니다.
-          });
-        },
-        child: Icon(Icons.create), // 연필 아이콘
-        backgroundColor: const Color.fromARGB(255, 241, 249, 253),
-      ),
+      floatingActionButton: loggedInMember != null
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WritePage(),
+                  ),
+                ).then((_) {
+                  _refreshPosts();
+                });
+              },
+              child: Icon(Icons.create),
+              backgroundColor: const Color.fromARGB(255, 241, 249, 253),
+            )
+          : null,
     );
   }
 }
@@ -128,20 +139,20 @@ class _PostsListPageState extends State<PostsListPage> {
 class PostWidget extends StatelessWidget {
   final Commu post;
   final VoidCallback onPostUpdated;
+  final int commentCount;
+  final String title;
+  final String formattedTimestamp;
 
-  PostWidget({required this.post, required this.onPostUpdated});
+  PostWidget({
+    required this.post,
+    required this.onPostUpdated,
+    required this.commentCount,
+    required this.title,
+    required this.formattedTimestamp,
+  });
 
   @override
   Widget build(BuildContext context) {
-    String formattedTimestamp =
-        '${post.createdAt.year}-${post.createdAt.month}-${post.createdAt.day} ${post.createdAt.hour}:${post.createdAt.minute}';
-
-    if (post.title == null) {
-      print('Post title is null for postID: ${post.postID}');
-    } else {
-      print('Post title for postID ${post.postID}: ${post.title}');
-    }
-
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -158,7 +169,7 @@ class PostWidget extends StatelessWidget {
         padding: EdgeInsets.all(10),
         margin: EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: Color.fromARGB(255, 253, 253, 253), // 배경색을 흰색으로 설정
+          color: Color.fromARGB(255, 253, 253, 253),
           border: Border.all(color: Color.fromARGB(255, 221, 220, 220)),
           borderRadius: BorderRadius.circular(0),
         ),
@@ -166,7 +177,7 @@ class PostWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              post.title ?? 'No Title', // null인 경우 처리
+              title,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -186,13 +197,13 @@ class PostWidget extends StatelessWidget {
                     Icon(Icons.comment),
                     SizedBox(width: 5),
                     Text(
-                      '${post.commentCount}',
+                      '$commentCount',
                       style: TextStyle(fontSize: 12),
                     ),
                   ],
                 ),
                 Text(
-                  '$formattedTimestamp',
+                  formattedTimestamp,
                   style: TextStyle(fontSize: 12),
                 ),
               ],

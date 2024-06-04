@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health/Sin/post_detail.dart';
-import 'Commu.dart'; // DatabaseHelper와 Commu, Comment 클래스 import
+import '../health.dart'; // DatabaseHelper와 Commu, Comment 클래스 import
 
 class CustomSearchDelegate extends SearchDelegate<String> {
   final List<Commu> allPosts;
@@ -34,7 +34,7 @@ class CustomSearchDelegate extends SearchDelegate<String> {
   Widget buildResults(BuildContext context) {
     if (query.isEmpty) {
       return Center(
-        child: Text('Please enter a search term'),
+        child: Text('검색어를 입력하세요'),
       );
     }
 
@@ -44,9 +44,9 @@ class CustomSearchDelegate extends SearchDelegate<String> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return Center(child: Text('에러: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No results found.'));
+          return Center(child: Text('검색 결과가 없습니다.'));
         } else {
           final filteredPosts = snapshot.data!;
           return ListView.builder(
@@ -79,7 +79,7 @@ class CustomSearchDelegate extends SearchDelegate<String> {
   Widget buildSuggestions(BuildContext context) {
     if (query.isEmpty) {
       return Center(
-        child: Text('Enter a search term to see suggestions'),
+        child: Text('검색어를 입력하세요'),
       );
     }
 
@@ -89,9 +89,9 @@ class CustomSearchDelegate extends SearchDelegate<String> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return Center(child: Text('에러: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No suggestions.'));
+          return Center(child: Text('추천 결과가 없습니다.'));
         } else {
           final suggestedPosts = snapshot.data!;
           return ListView.builder(

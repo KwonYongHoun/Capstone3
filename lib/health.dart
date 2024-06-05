@@ -233,6 +233,7 @@ class DatabaseHelper {
   static const String commentsCollection = 'comments';
   static const String scrapsCollection = 'scraps';
   static const String bodyInfoCollection = 'bodyInfo';
+  static const String congestionCollection = 'congestionState';
 
 // Firestore 초기화
   static Future<void> initialize() async {
@@ -552,5 +553,20 @@ class DatabaseHelper {
     } catch (e) {
       print('비밀번호 업데이트 중 오류가 발생했습니다: $e');
     }
+  }
+
+  static Future<void> updateCongestion(String congestionState) async {
+    await _db.collection(congestionCollection).doc('currentState').set({
+      'congestion': congestionState,
+    });
+  }
+
+  static Future<String> getCongestion() async {
+    final docSnapshot =
+        await _db.collection(congestionCollection).doc('currentState').get();
+    if (docSnapshot.exists) {
+      return docSnapshot.data()!['congestion'];
+    }
+    return 'Unknown';
   }
 }

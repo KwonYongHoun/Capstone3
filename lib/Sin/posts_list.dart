@@ -38,24 +38,16 @@ class _PostsListPageState extends State<PostsListPage> {
     switch (boardType) {
       case '자유게시판':
         return DecorationImage(
-          image: AssetImage('assets/images/001.png'),
-          fit: BoxFit.cover,
-        );
+            image: AssetImage('assets/images/001.png'), fit: BoxFit.cover);
       case '헬스 파트너 찾기':
         return DecorationImage(
-          image: AssetImage('assets/images/002.png'),
-          fit: BoxFit.cover,
-        );
+            image: AssetImage('assets/images/002.png'), fit: BoxFit.cover);
       case '운동 고민 게시판':
         return DecorationImage(
-          image: AssetImage('assets/images/003.png'),
-          fit: BoxFit.cover,
-        );
+            image: AssetImage('assets/images/003.png'), fit: BoxFit.cover);
       default:
         return DecorationImage(
-          image: AssetImage('assets/images/004.png'),
-          fit: BoxFit.cover,
-        );
+            image: AssetImage('assets/images/004.png'), fit: BoxFit.cover);
     }
   }
 
@@ -102,9 +94,8 @@ class _PostsListPageState extends State<PostsListPage> {
                               formattedTimestamp: formattedTimestamp,
                             ),
                             Divider(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              height: 10,
-                            ),
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                height: 10),
                           ],
                         );
                       },
@@ -119,12 +110,9 @@ class _PostsListPageState extends State<PostsListPage> {
       floatingActionButton: loggedInMember != null
           ? FloatingActionButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => WritePage(),
-                  ),
-                ).then((_) {
+                Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => WritePage()))
+                    .then((_) {
                   _refreshPosts();
                 });
               },
@@ -181,10 +169,7 @@ class PostWidget extends StatelessWidget {
           children: [
             Text(
               title,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 5),
             Text(

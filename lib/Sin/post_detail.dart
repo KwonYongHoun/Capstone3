@@ -58,24 +58,22 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
       await DatabaseHelper.insertComment(newComment);
 
-      int newCommentCount = await DatabaseHelper.getCommentCount(postID);
-      await DatabaseHelper.updateCommentCount(postID, newCommentCount);
-
       setState(() {
         _commentsFuture = _fetchComments();
+        widget.post.commentCount = (widget.post.commentCount ?? 0) + 1;
         widget.onCommentAdded();
-        widget.post.commentCount = newCommentCount;
       });
+
       _commentController.clear();
     }
   }
 
-  void _showDeleteConfirmationDialog(String commentID, Member loggedInMember) {
+  void _showDeleteConfirmationDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('삭제 확인'),
-        content: Text('댓글을 삭제하시겠습니까?'),
+        content: Text('게시물을 삭제하시겠습니까?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -84,13 +82,18 @@ class _PostDetailPageState extends State<PostDetailPage> {
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              await _deleteComment(commentID);
+              await _deletePost();
             },
             child: Text('예'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _deletePost() async {
+    await DatabaseHelper.deletePost(widget.post.postID!);
+    Navigator.of(context).pop(true); // 삭제 완료 후 true 값 전달
   }
 
   Future<void> _deleteComment(String commentID) async {
@@ -101,6 +104,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
       setState(() {
         _commentsFuture = _fetchComments();
         widget.post.commentCount = totalCommentCount;
+        widget.onCommentAdded();
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('댓글이 삭제되었습니다.')),
@@ -217,10 +221,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
               widget.post.fk_memberNumber)
             IconButton(
               icon: Icon(Icons.delete),
-              onPressed: () => _showDeleteConfirmationDialog(
-                widget.post.postID!,
-                loggedInMember,
-              ),
+              onPressed: _showDeleteConfirmationDialog,
             ),
           FutureBuilder<bool>(
             future: _isScrappedFuture,
@@ -258,9 +259,20 @@ class _PostDetailPageState extends State<PostDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.post.title ?? '제목 없음',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.post.title ?? '제목 없음',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Text(
+                  widget.post.isAnonymous ? '익명' : widget.post.name ?? '익명',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              ],
             ),
             SizedBox(height: 10),
             Text(widget.post.content),
@@ -325,8 +337,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                   ],
                                   onSelected: (String value) {
                                     if (value == 'delete') {
-                                      _showDeleteConfirmationDialog(
-                                          comment.commentID, loggedInMember);
+                                      _deleteComment(comment.commentID);
                                     }
                                   },
                                 ),

@@ -1,10 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:health/Kim/record/myrecord_machine.dart';
+import '../myrecord/myrecord_machine.dart';
 
-class MyRecordPage extends StatelessWidget {
+class MyRecordPage extends StatefulWidget {
+  // StatelessWidget에서 StatefulWidget으로 변경
   final DateTime selectedDate;
 
   const MyRecordPage({Key? key, required this.selectedDate}) : super(key: key);
+
+  @override
+  _MyRecordPageState createState() => _MyRecordPageState();
+}
+
+class _MyRecordPageState extends State<MyRecordPage> {
+  late TextEditingController _startTimeController;
+  late TextEditingController _endTimeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimeController = TextEditingController();
+    _endTimeController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _startTimeController.dispose();
+    _endTimeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +42,7 @@ class MyRecordPage extends StatelessWidget {
           const Divider(),
           const SizedBox(height: 16),
           Text(
-            '${selectedDate.month}월 ${selectedDate.day}일',
+            '${widget.selectedDate.month}월 ${widget.selectedDate.day}일',
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
@@ -31,10 +54,29 @@ class MyRecordPage extends StatelessWidget {
             style: TextStyle(fontSize: 16),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '운동 시작 시간 - 운동 종료 시간',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _startTimeController,
+                  decoration: const InputDecoration(
+                    labelText: '운동 시작 시간',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: _endTimeController,
+                  decoration: const InputDecoration(
+                    labelText: '운동 종료 시간',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           const Divider(),

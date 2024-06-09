@@ -16,12 +16,16 @@ class AuthProvider extends ChangeNotifier {
 
   Member? get loggedInMember => _loggedInMember;
 
+  // loggedInMember에서 이름과 memberNumber를 가져오는 메서드 추가
+  String? get loggedInMemberName => _loggedInMember?.name;
+  int? get loggedInMemberNumber => _loggedInMember?.memberNumber;
+
   void setLoggedInMember(Member member) {
     _loggedInMember = member;
     notifyListeners();
   }
 
-//비밀번호
+  //비밀번호
 
   String _enteredId = '';
   String _enteredPassword = '';

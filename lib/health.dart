@@ -177,6 +177,8 @@ class DatabaseHelper {
   static const String membersCollection = 'members';
   static const String postsCollection = 'posts';
   static const String commentsCollection = 'comments';
+  static const String congestionCollection = 'congestionState';
+
 // Firestore 초기화
   static Future<void> initialize() async {
     await Firebase.initializeApp();
@@ -352,5 +354,20 @@ class DatabaseHelper {
         .where('title', isLessThanOrEqualTo: query + '\uf8ff')
         .get();
     return querySnapshot.docs.map((doc) => Commu.fromMap(doc.data())).toList();
+  }
+
+  static Future<void> updateCongestion(String congestionState) async {
+    await _db.collection(congestionCollection).doc('currentState').set({
+      'congestion': congestionState,
+    });
+  }
+
+  static Future<String> getCongestion() async {
+    final docSnapshot =
+        await _db.collection(congestionCollection).doc('currentState').get();
+    if (docSnapshot.exists) {
+      return docSnapshot.data()!['congestion'];
+    }
+    return 'Unknown';
   }
 }

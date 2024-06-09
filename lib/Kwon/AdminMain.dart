@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:health/Kwon/MemberMain.dart';
+import 'package:health/Kwon/ReportedPostsPage.dart';
 import 'Congestion.dart';
 
 //관리자모드 페이지
@@ -43,7 +44,11 @@ class AdminModeHomePage extends StatelessWidget {
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Navigate to Board Management Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReportedPostsPage()),
+                );
               },
               child: Text('커뮤니티 관리'),
             ),

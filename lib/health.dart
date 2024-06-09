@@ -76,7 +76,6 @@ class Member {
     };
   }
 }
-
 class Commu {
   String? postID;
   final String? fk_memberNumber;
@@ -131,8 +130,42 @@ class Commu {
       commentCount: map['commentCount'],
       likeCount: map['likeCount'],
       reportCount: map['reportCount'],
+      timestamp: map['timestamp'] != null ? DateTime.parse(map['timestamp']) : null,
       name: map['name'],
     );
+  }
+
+  factory Commu.fromFirestore(DocumentSnapshot doc) {
+  Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+  return Commu(
+    postID: doc.id,
+    fk_memberNumber: data['fk_memberNumber'],
+    type: data['type'],
+    title: data['title'],
+    content: data['content'],
+    createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : DateTime.now(), // 문자열을 DateTime으로 변환
+    commentCount: data['commentCount'],
+    likeCount: data['likeCount'],
+    reportCount: data['reportCount'],
+    timestamp: data['timestamp'] != null ? (data['timestamp'] as Timestamp).toDate() : null,
+    name: data['name'],
+  );
+}
+
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'fk_memberNumber': fk_memberNumber,
+      'type': type,
+      'title': title,
+      'content': content,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'commentCount': commentCount,
+      'likeCount': likeCount,
+      'reportCount': reportCount,
+      'timestamp': timestamp != null ? Timestamp.fromDate(timestamp!) : null,
+      'name': name,
+    };
   }
 }
 
@@ -370,4 +403,6 @@ class DatabaseHelper {
     }
     return 'Unknown';
   }
+
+  
 }

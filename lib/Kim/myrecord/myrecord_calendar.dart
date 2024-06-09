@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../myrecord/myrecord_page.dart';
-import '../myrecord/myrecord_statistic.dart';
-import '../database/calendar_database.dart'; // 데이터베이스 파일 임포트
+import '/Kim/myrecord/myrecord_page.dart';
+import '/Kim/myrecord/myrecord_statistic.dart';
+import '/Kim/database/calendar_database.dart'; // 데이터베이스 파일 임포트
 import 'dart:async';
 
 void main() {

@@ -80,5 +80,3 @@ class ExerciseExplainPage extends StatelessWidget {
     );
   }
 }
-
-

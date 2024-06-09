@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../myrecord/myrecord_machine.dart';
+import '/Kim/myrecord/myrecord_machine.dart';
 
 class MyRecordPage extends StatefulWidget {
   // StatelessWidget에서 StatefulWidget으로 변경

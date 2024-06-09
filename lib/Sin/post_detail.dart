@@ -21,18 +21,23 @@ class _PostDetailPageState extends State<PostDetailPage> {
   TextEditingController _commentController = TextEditingController();
   late Future<List<Comment>> _commentsFuture;
   bool _isAnonymous = false;
-  late Future<bool> _isScrappedFuture;
+  Future<bool>? _isScrappedFuture;
 
   @override
   void initState() {
     super.initState();
     _commentsFuture = _fetchComments();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final loggedInMember = authProvider.loggedInMember;
-    _isScrappedFuture = loggedInMember != null
-        ? DatabaseHelper.isPostScrapped(
-            loggedInMember.memberNumber.toString(), widget.post.postID!)
-        : Future.value(false);
+    if (loggedInMember != null) {
+      _isScrappedFuture = DatabaseHelper.isPostScrapped(
+          loggedInMember.memberNumber.toString(), widget.post.postID!);
+    }
   }
 
   Future<List<Comment>> _fetchComments() async {

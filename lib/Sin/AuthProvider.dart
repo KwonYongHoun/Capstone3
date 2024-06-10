@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../health.dart'; // Member 클래스가 있는 파일로 경로를 수정해주세요.
 
+//0610
 class AuthProvider extends ChangeNotifier {
   Member? _loggedInMember;
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:health/Kim/exercise/exercise_explain.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ExerciseGuidePage extends StatelessWidget {
   const ExerciseGuidePage({Key? key}) : super(key: key);

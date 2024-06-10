@@ -190,7 +190,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
             'title': widget.post.title,
             'content': widget.post.content,
             'createdAt': widget.post.createdAt.toIso8601String(),
-            'commentCount': widget.post.commentCount,
+            'commentCount': widget.post.commentCount ?? 0,
             'reportCount': 1,
             'timestamp': FieldValue.serverTimestamp(),
             'name': widget.post.name,

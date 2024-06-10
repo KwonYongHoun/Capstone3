@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:health/Park/loginpage.dart';
+import 'package:health/Park/mypagescreen.dart';
+import 'package:provider/provider.dart';
+import '../health.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../Sin/AuthProvider.dart';
 
 class NicknameChangePage extends StatefulWidget {
   @override
@@ -14,6 +20,34 @@ class _NicknameChangePageState extends State<NicknameChangePage> {
     super.dispose();
   }
 
+  Future<void> _updateNickname() async {
+    String newNickname = _nicknameController.text;
+
+    if (newNickname.isNotEmpty) {
+      // AuthProvider에서 로그인된 사용자 정보 가져오기
+      Member? loggedInMember =
+          Provider.of<AuthProvider>(context, listen: false).loggedInMember;
+
+      if (loggedInMember != null) {
+        await DatabaseHelper.updateNickname(
+            loggedInMember.memberNumber, newNickname);
+
+        // 업데이트 후 MypageScreen을 갱신합니다.
+        Navigator.pop(context, newNickname); // 변경된 닉네임 전달
+      } else {
+        // 로그인된 사용자가 없는 경우 경고를 표시합니다.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('로그인된 사용자가 없습니다.')),
+        );
+      }
+    } else {
+      // 닉네임이 비어있는 경우 경고를 표시합니다.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('닉네임을 입력해 주세요.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +57,7 @@ class _NicknameChangePageState extends State<NicknameChangePage> {
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // 왼쪽 정렬을 위해 수정
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             SizedBox(
               height: 30.0,
@@ -47,21 +81,21 @@ class _NicknameChangePageState extends State<NicknameChangePage> {
                 hintStyle: TextStyle(color: Colors.grey),
               ),
             ),
-            Spacer(), // 나머지 공간을 모두 차지하도록 Spacer 추가
+            Spacer(),
             Padding(
-              padding: const EdgeInsets.only(bottom: 20.0), // 하단 여백 조정
+              padding: const EdgeInsets.only(bottom: 20.0),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _updateNickname,
                 child: Text('변경하기',
                     style: TextStyle(
                         fontWeight: FontWeight.bold, color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
-                  padding: EdgeInsets.symmetric(vertical: 20.0), // 수직 패딩 조정
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(13.0),
                   ),
-                  minimumSize: Size.fromHeight(50), // 버튼의 최소 높이 지정
+                  minimumSize: Size.fromHeight(50),
                 ),
               ),
             ),

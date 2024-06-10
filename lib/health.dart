@@ -91,11 +91,11 @@ class Commu {
   final String title;
   final String content;
   final DateTime createdAt;
-  final bool isAnonymous;
   int? commentCount;
   int? reportCount;
   DateTime? timestamp;
   String? name;
+  bool isAnonymous; // 여기에 추가
 
   Commu({
     required this.postID,
@@ -104,11 +104,11 @@ class Commu {
     required this.title,
     required this.content,
     required this.createdAt,
-    required this.isAnonymous,
     this.commentCount,
     this.reportCount,
     this.timestamp,
     this.name,
+    this.isAnonymous = false, // 기본값을 false로 설정
   });
 
   Map<String, dynamic> toMap() {
@@ -122,8 +122,8 @@ class Commu {
       'commentCount': commentCount,
       'reportCount': reportCount,
       'timestamp': timestamp?.toIso8601String(),
-      'name': isAnonymous ? 'Anonymous' : name,
-      'isAnonymous': isAnonymous,
+      'name': name,
+      'isAnonymous': isAnonymous, // 여기에 추가
     };
   }
 
@@ -137,10 +137,9 @@ class Commu {
       createdAt: DateTime.parse(map['createdAt']),
       commentCount: map['commentCount'],
       reportCount: map['reportCount'],
-      timestamp:
-          map['timestamp'] != null ? DateTime.parse(map['timestamp']) : null,
-      name: map['isAnonymous'] ? 'Anonymous' : map['name'],
-      isAnonymous: map['isAnonymous'] ?? false,
+      timestamp: map['timestamp'] != null ? DateTime.parse(map['timestamp']) : null,
+      name: map['name'],
+      isAnonymous: map['isAnonymous'] ?? false, // 여기에 추가
     );
   }
 
@@ -152,24 +151,13 @@ class Commu {
       type: data['type'],
       title: data['title'],
       content: data['content'],
-      createdAt: _toDateTime(data['createdAt']),
+      createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : DateTime.now(),
       commentCount: data['commentCount'],
       reportCount: data['reportCount'],
-      timestamp:
-          data['timestamp'] != null ? _toDateTime(data['timestamp']) : null,
-      name: data['isAnonymous'] ? 'Anonymous' : data['name'],
-      isAnonymous: data['isAnonymous'] ?? false,
+      timestamp: data['timestamp'] != null ? (data['timestamp'] as Timestamp).toDate() : null,
+      name: data['name'],
+      isAnonymous: data['isAnonymous'] ?? false, // 여기에 추가
     );
-  }
-
-  static DateTime _toDateTime(dynamic timestamp) {
-    if (timestamp is Timestamp) {
-      return timestamp.toDate();
-    } else if (timestamp is String) {
-      return DateTime.parse(timestamp);
-    } else {
-      throw ArgumentError('Invalid timestamp format');
-    }
   }
 
   Map<String, dynamic> toFirestore() {
@@ -183,7 +171,7 @@ class Commu {
       'reportCount': reportCount,
       'timestamp': timestamp != null ? Timestamp.fromDate(timestamp!) : null,
       'name': name,
-      'isAnonymous': isAnonymous,
+      'isAnonymous': isAnonymous, // 여기에 추가
     };
   }
 }

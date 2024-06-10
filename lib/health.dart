@@ -96,7 +96,6 @@ class Commu {
   int? reportCount;
   DateTime? timestamp;
   String? name;
-  int? likeCount;
 
   Commu({
     required this.postID,
@@ -110,7 +109,6 @@ class Commu {
     this.reportCount,
     this.timestamp,
     this.name,
-    this.likeCount,
   });
 
   Map<String, dynamic> toMap() {
@@ -156,7 +154,6 @@ class Commu {
       content: data['content'],
       createdAt: _toDateTime(data['createdAt']),
       commentCount: data['commentCount'],
-      likeCount: data['likeCount'],
       reportCount: data['reportCount'],
       timestamp:
           data['timestamp'] != null ? _toDateTime(data['timestamp']) : null,
@@ -183,7 +180,6 @@ class Commu {
       'content': content,
       'createdAt': Timestamp.fromDate(createdAt),
       'commentCount': commentCount,
-      'likeCount': likeCount,
       'reportCount': reportCount,
       'timestamp': timestamp != null ? Timestamp.fromDate(timestamp!) : null,
       'name': name,

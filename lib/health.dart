@@ -96,6 +96,7 @@ class Commu {
   int? reportCount;
   DateTime? timestamp;
   String? name;
+  int? likeCount;
 
   Commu({
     required this.postID,
@@ -109,6 +110,7 @@ class Commu {
     this.reportCount,
     this.timestamp,
     this.name,
+    this.likeCount,
   });
 
   Map<String, dynamic> toMap() {
@@ -137,9 +139,56 @@ class Commu {
       createdAt: DateTime.parse(map['createdAt']),
       commentCount: map['commentCount'],
       reportCount: map['reportCount'],
+      timestamp:
+          map['timestamp'] != null ? DateTime.parse(map['timestamp']) : null,
       name: map['isAnonymous'] ? 'Anonymous' : map['name'],
-      isAnonymous: map['isAnonymous'],
+      isAnonymous: map['isAnonymous'] ?? false,
     );
+  }
+
+  factory Commu.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return Commu(
+      postID: doc.id,
+      fk_memberNumber: data['fk_memberNumber'],
+      type: data['type'],
+      title: data['title'],
+      content: data['content'],
+      createdAt: _toDateTime(data['createdAt']),
+      commentCount: data['commentCount'],
+      likeCount: data['likeCount'],
+      reportCount: data['reportCount'],
+      timestamp:
+          data['timestamp'] != null ? _toDateTime(data['timestamp']) : null,
+      name: data['isAnonymous'] ? 'Anonymous' : data['name'],
+      isAnonymous: data['isAnonymous'] ?? false,
+    );
+  }
+
+  static DateTime _toDateTime(dynamic timestamp) {
+    if (timestamp is Timestamp) {
+      return timestamp.toDate();
+    } else if (timestamp is String) {
+      return DateTime.parse(timestamp);
+    } else {
+      throw ArgumentError('Invalid timestamp format');
+    }
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'fk_memberNumber': fk_memberNumber,
+      'type': type,
+      'title': title,
+      'content': content,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'commentCount': commentCount,
+      'likeCount': likeCount,
+      'reportCount': reportCount,
+      'timestamp': timestamp != null ? Timestamp.fromDate(timestamp!) : null,
+      'name': name,
+      'isAnonymous': isAnonymous,
+    };
   }
 }
 
@@ -313,11 +362,20 @@ class DatabaseHelper {
 
   // 특정 게시물의 신고 수 가져오기
   static Future<int> getReportCount(String postID) async {
-    final docSnapshot = await _db.collection(postsCollection).doc(postID).get();
-    if (docSnapshot.exists) {
-      return docSnapshot.data()!['reportCount'];
+    try {
+      final docSnapshot =
+          await _db.collection(postsCollection).doc(postID).get();
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data() as Map<String, dynamic>?;
+        if (data != null && data.containsKey('reportCount')) {
+          return data['reportCount'];
+        }
+      }
+      return 0; // 신고 수가 존재하지 않으면 기본값 0 반환
+    } catch (e) {
+      print('Error getting report count: $e');
+      return 0; // 예외가 발생할 경우 기본값 0 반환
     }
-    return 0;
   }
 
   // 특정 유형의 게시물 가져오기

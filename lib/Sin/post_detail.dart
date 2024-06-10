@@ -156,56 +156,60 @@ class _PostDetailPageState extends State<PostDetailPage> {
   }
 
   void _reportPost() async {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('신고'),
-      content: Text('신고하시겠습니까?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('아니오'),
-        ),
-        TextButton(
-          onPressed: () async {
-            Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('신고'),
+        content: Text('신고하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('아니오'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
 
-            final reportRef = FirebaseFirestore.instance.collection('reports').doc(widget.post.postID);
+              final reportRef = FirebaseFirestore.instance
+                  .collection('reports')
+                  .doc(widget.post.postID);
 
-            await FirebaseFirestore.instance.runTransaction((transaction) async {
-              DocumentSnapshot snapshot = await transaction.get(reportRef);
+              await FirebaseFirestore.instance
+                  .runTransaction((transaction) async {
+                DocumentSnapshot snapshot = await transaction.get(reportRef);
 
-              if (!snapshot.exists) {
-                transaction.set(reportRef, {
-                  'postID': widget.post.postID,
-                  'fk_memberNumber': widget.post.fk_memberNumber,
-                  'type': widget.post.type,
-                  'title': widget.post.title,
-                  'content': widget.post.content,
-                  'createdAt': widget.post.createdAt.toIso8601String(),
-                  'commentCount': widget.post.commentCount,
-                  'likeCount': widget.post.likeCount,
-                  'reportCount': 1,
-                  'timestamp': FieldValue.serverTimestamp(),
-                  'name': widget.post.name,
-                });
-              } else {
-                transaction.update(reportRef, {
-                  'reportCount': (snapshot.data() as Map<String, dynamic>)['reportCount'] + 1,
-                  'timestamp': FieldValue.serverTimestamp(),
-                });
-              }
-            });
+                if (!snapshot.exists) {
+                  transaction.set(reportRef, {
+                    'postID': widget.post.postID,
+                    'fk_memberNumber': widget.post.fk_memberNumber,
+                    'type': widget.post.type,
+                    'title': widget.post.title,
+                    'content': widget.post.content,
+                    'createdAt': widget.post.createdAt.toIso8601String(),
+                    'commentCount': widget.post.commentCount,
+                    'reportCount': 1,
+                    'timestamp': FieldValue.serverTimestamp(),
+                    'name': widget.post.name,
+                  });
+                } else {
+                  transaction.update(reportRef, {
+                    'reportCount': (snapshot.data()
+                            as Map<String, dynamic>)['reportCount'] +
+                        1,
+                    'timestamp': FieldValue.serverTimestamp(),
+                  });
+                }
+              });
 
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('신고가 접수되었습니다.')));
-          },
-          child: Text('예'),
-        ),
-      ],
-    ),
-  );
-}
-
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text('신고가 접수되었습니다.')));
+            },
+            child: Text('예'),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _scrapPost(String memberNumber, String postID) async {
     List<Commu> scrappedPosts =

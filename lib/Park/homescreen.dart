@@ -1,9 +1,11 @@
+import 'dart:async'; // Timer 사용을 위해 추가
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:provider/provider.dart';
 import 'loginpage.dart'; // enteredId 변수가 여기서 선언된 것으로 가정
 import '../Kwon/Congestion.dart';
 import '../Sin/AuthProvider.dart'; // AuthProvider 임포트
+import '../health.dart'; // DatabaseHelper 클래스 임포트
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -12,6 +14,32 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String congestion = congestionChange;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+      _refreshCongestion();
+    });
+  }
+
+  void _refreshCongestion() async {
+    String newCongestion = await DatabaseHelper.getCongestion();
+    setState(() {
+      congestion = newCongestion;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

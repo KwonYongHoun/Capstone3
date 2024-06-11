@@ -28,6 +28,7 @@ class _WritePageState extends State<WritePage> {
       title: _titleController.text,
       content: _contentController.text,
       createdAt: now,
+      isAnonymous: _isAnonymous, // isAnonymous 매개변수 추가
       name: authorName,
       fk_memberNumber: loggedInMember.memberNumber.toString(),
     );

@@ -95,6 +95,7 @@ class Commu {
   int? reportCount;
   DateTime? timestamp;
   String? name;
+  bool isAnonymous; // 여기에 추가
 
   Commu({
     required this.postID,
@@ -107,6 +108,7 @@ class Commu {
     this.reportCount,
     this.timestamp,
     this.name,
+    this.isAnonymous = false, // 기본값을 false로 설정
   });
 
   Map<String, dynamic> toMap() {
@@ -121,6 +123,7 @@ class Commu {
       'reportCount': reportCount,
       'timestamp': timestamp?.toIso8601String(),
       'name': name,
+      'isAnonymous': isAnonymous, // 여기에 추가
     };
   }
 
@@ -134,8 +137,42 @@ class Commu {
       createdAt: DateTime.parse(map['createdAt']),
       commentCount: map['commentCount'],
       reportCount: map['reportCount'],
+      timestamp: map['timestamp'] != null ? DateTime.parse(map['timestamp']) : null,
       name: map['name'],
+      isAnonymous: map['isAnonymous'] ?? false, // 여기에 추가
     );
+  }
+
+  factory Commu.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return Commu(
+      postID: doc.id,
+      fk_memberNumber: data['fk_memberNumber'],
+      type: data['type'],
+      title: data['title'],
+      content: data['content'],
+      createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : DateTime.now(),
+      commentCount: data['commentCount'],
+      reportCount: data['reportCount'],
+      timestamp: data['timestamp'] != null ? (data['timestamp'] as Timestamp).toDate() : null,
+      name: data['name'],
+      isAnonymous: data['isAnonymous'] ?? false, // 여기에 추가
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'fk_memberNumber': fk_memberNumber,
+      'type': type,
+      'title': title,
+      'content': content,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'commentCount': commentCount,
+      'reportCount': reportCount,
+      'timestamp': timestamp != null ? Timestamp.fromDate(timestamp!) : null,
+      'name': name,
+      'isAnonymous': isAnonymous, // 여기에 추가
+    };
   }
 }
 
@@ -229,6 +266,7 @@ class DatabaseHelper {
   static const String commentsCollection = 'comments';
   static const String scrapsCollection = 'scraps';
   static const String bodyInfoCollection = 'bodyInfo';
+  static const String congestionCollection = 'congestionState';
 
 // Firestore 초기화
   static Future<void> initialize() async {
@@ -308,11 +346,20 @@ class DatabaseHelper {
 
   // 특정 게시물의 신고 수 가져오기
   static Future<int> getReportCount(String postID) async {
-    final docSnapshot = await _db.collection(postsCollection).doc(postID).get();
-    if (docSnapshot.exists) {
-      return docSnapshot.data()!['reportCount'];
+    try {
+      final docSnapshot =
+          await _db.collection(postsCollection).doc(postID).get();
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data() as Map<String, dynamic>?;
+        if (data != null && data.containsKey('reportCount')) {
+          return data['reportCount'];
+        }
+      }
+      return 0; // 신고 수가 존재하지 않으면 기본값 0 반환
+    } catch (e) {
+      print('Error getting report count: $e');
+      return 0; // 예외가 발생할 경우 기본값 0 반환
     }
-    return 0;
   }
 
   // 특정 유형의 게시물 가져오기
@@ -337,11 +384,13 @@ class DatabaseHelper {
   }
 
   // 댓글 삽입
+  // 댓글 삽입 메서드 수정
   static Future<void> insertComment(Comment comment) async {
     await _db
         .collection(commentsCollection)
         .doc(comment.commentID)
         .set(comment.toMap());
+    await _updateCommentCount(comment.postID);
   }
 
   // 특정 게시물의 댓글 가져오기
@@ -355,7 +404,7 @@ class DatabaseHelper {
         .toList();
   }
 
-  // 댓글 수 가져오기
+  // 댓글 수 가져오기 메서드
   static Future<int> getCommentCount(String postID) async {
     final querySnapshot = await _db
         .collection(commentsCollection)
@@ -364,13 +413,13 @@ class DatabaseHelper {
     return querySnapshot.docs.length;
   }
 
-  // 댓글 수 업데이트
-  static Future<void> updateCommentCount(
-      String postID, int newCommentCount) async {
+  // 댓글 수 업데이트 메서드 추가
+  static Future<void> _updateCommentCount(String postID) async {
+    final commentCount = await getCommentCount(postID);
     await _db
         .collection(postsCollection)
         .doc(postID)
-        .update({'commentCount': newCommentCount});
+        .update({'commentCount': commentCount});
   }
 
   // 모든 게시물 가져오기
@@ -379,9 +428,14 @@ class DatabaseHelper {
     return querySnapshot.docs.map((doc) => Commu.fromMap(doc.data())).toList();
   }
 
-  // 댓글 삭제
   static Future<void> deleteComment(String commentID) async {
-    await _db.collection(commentsCollection).doc(commentID).delete();
+    final docSnapshot =
+        await _db.collection(commentsCollection).doc(commentID).get();
+    if (docSnapshot.exists) {
+      final postID = docSnapshot.data()!['postID'];
+      await _db.collection(commentsCollection).doc(commentID).delete();
+      await _updateCommentCount(postID);
+    }
   }
 
   // 댓글 신고
@@ -541,5 +595,20 @@ class DatabaseHelper {
     } catch (e) {
       print('비밀번호 업데이트 중 오류가 발생했습니다: $e');
     }
+  }
+
+  static Future<void> updateCongestion(String congestionState) async {
+    await _db.collection(congestionCollection).doc('currentState').set({
+      'congestion': congestionState,
+    });
+  }
+
+  static Future<String> getCongestion() async {
+    final docSnapshot =
+        await _db.collection(congestionCollection).doc('currentState').get();
+    if (docSnapshot.exists) {
+      return docSnapshot.data()!['congestion'];
+    }
+    return 'Unknown';
   }
 }

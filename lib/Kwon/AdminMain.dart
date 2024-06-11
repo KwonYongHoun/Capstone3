@@ -1,23 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:health/Kwon/MemberMain.dart';
+import 'package:health/Kwon/ReportedPostsPage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'Congestion.dart';
+import 'EntryRecord.dart';
 
 //관리자모드 페이지
-class AdminModeApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Admin Mode',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: AdminModeHomePage(),
-    );
-  }
-}
-
 class AdminModeHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -34,8 +23,7 @@ class AdminModeHomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => MemberManagementPage()),
+                  MaterialPageRoute(builder: (context) => MemberManagementPage()),
                 );
               },
               child: Text('회원 관리'),
@@ -43,19 +31,28 @@ class AdminModeHomePage extends StatelessWidget {
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Navigate to Board Management Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ReportedPostsPage()),
+                );
               },
               child: Text('커뮤니티 관리'),
             ),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
-                // Scan QR Code
+                // QR 코드 스캔
                 String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
                     '#ff6666', 'Cancel', true, ScanMode.QR);
 
-                // Handle scanned QR Code
-                print('Scanned QR Code: $barcodeScanRes');
+                if (barcodeScanRes != '-1') {
+                  // Firestore에 스캔한 QR 코드 기록
+                  FirebaseFirestore.instance.collection('entryLogs').add({
+                    'memberId': barcodeScanRes,
+                    'timestamp': FieldValue.serverTimestamp(),
+                  });
+                  print('Logged entry for QR Code: $barcodeScanRes');
+                }
               },
               child: Text('QR 카메라 실행'),
             ),
@@ -68,6 +65,28 @@ class AdminModeHomePage extends StatelessWidget {
                 );
               },
               child: Text('혼잡도 관리'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EntryLogsPage()),
+                );
+              },
+              child: Text('입장 로그 보기'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                // 테스트 데이터 Firestore에 추가
+                FirebaseFirestore.instance.collection('entryLogs').add({
+                  'memberId': 'testMemberId',
+                  'timestamp': FieldValue.serverTimestamp(),
+                });
+                print('Logged entry for test QR Code');
+              },
+              child: Text('테스트 데이터 추가'),
             ),
           ],
         ),

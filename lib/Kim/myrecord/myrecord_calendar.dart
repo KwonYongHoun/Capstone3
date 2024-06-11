@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '/Kim/myrecord/myrecord_page.dart';
-import '/Kim/myrecord/myrecord_statistic.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '/Kim/database/calendar_database.dart'; // 데이터베이스 파일 임포트
 import 'dart:async';
 
@@ -38,6 +38,7 @@ class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
   late Timer _timer;
   late Duration _elapsed;
   bool _isRunning = false;
+  Map<DateTime, List<String>> _events = {}; // 이벤트 맵
 
   @override
   void initState() {
@@ -47,6 +48,20 @@ class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
     _focusedDay = _selectedDay;
     _calendarFormat = CalendarFormat.month;
     _elapsed = Duration.zero;
+
+    _loadEvents(); // 이벤트 로드
+  }
+
+  void _loadEvents() async {
+    final querySnapshot =
+        await FirebaseFirestore.instance.collection('records').get();
+    setState(() {
+      _events = Map.fromIterable(
+        querySnapshot.docs,
+        key: (doc) => DateTime.parse(doc['date']),
+        value: (doc) => [doc['duration'].toString()],
+      );
+    });
   }
 
   void _startTimer() {
@@ -65,7 +80,13 @@ class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
     String date = _selectedDay.toIso8601String().split('T').first;
     int duration = _elapsed.inSeconds;
 
-    await CalendarDatabase().insertRecord(date, duration);
+    await FirebaseFirestore.instance.collection('records').add({
+      'date': date,
+      'duration': duration,
+      // 추가적인 필드를 여기에 추가할 수 있습니다.
+    });
+
+    _loadEvents(); // 저장 후 이벤트 다시 로드
   }
 
   @override
@@ -73,20 +94,6 @@ class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('나의 운동 기록'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyRecordStatisticPage(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.bar_chart),
-            tooltip: '통계',
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -97,6 +104,9 @@ class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) {
               return isSameDay(_selectedDay, day);
+            },
+            eventLoader: (day) {
+              return _events[day] ?? [];
             },
             headerStyle: const HeaderStyle(
               titleCentered: true,
@@ -119,6 +129,10 @@ class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
                 border: Border.all(color: Colors.green, width: 1.5),
               ),
               selectedTextStyle: const TextStyle(color: Colors.black),
+              markerDecoration: const BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+              ),
             ),
             daysOfWeekStyle: const DaysOfWeekStyle(
               weekendStyle: TextStyle(color: Colors.red),

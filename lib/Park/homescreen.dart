@@ -29,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       _refreshCongestion();
     });
   }

@@ -137,7 +137,8 @@ class Commu {
       createdAt: DateTime.parse(map['createdAt']),
       commentCount: map['commentCount'],
       reportCount: map['reportCount'],
-      timestamp: map['timestamp'] != null ? DateTime.parse(map['timestamp']) : null,
+      timestamp:
+          map['timestamp'] != null ? DateTime.parse(map['timestamp']) : null,
       name: map['name'],
       isAnonymous: map['isAnonymous'] ?? false, // 여기에 추가
     );
@@ -151,10 +152,14 @@ class Commu {
       type: data['type'],
       title: data['title'],
       content: data['content'],
-      createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : DateTime.now(),
+      createdAt: data['createdAt'] != null
+          ? DateTime.parse(data['createdAt'])
+          : DateTime.now(),
       commentCount: data['commentCount'],
       reportCount: data['reportCount'],
-      timestamp: data['timestamp'] != null ? (data['timestamp'] as Timestamp).toDate() : null,
+      timestamp: data['timestamp'] != null
+          ? (data['timestamp'] as Timestamp).toDate()
+          : null,
       name: data['name'],
       isAnonymous: data['isAnonymous'] ?? false, // 여기에 추가
     );

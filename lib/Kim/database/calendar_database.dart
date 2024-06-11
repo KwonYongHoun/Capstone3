@@ -1,54 +1,49 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CalendarDatabase {
-  static final CalendarDatabase _instance = CalendarDatabase._internal();
+  // Firebase Firestore 인스턴스 생성
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  factory CalendarDatabase() => _instance;
+  // Firestore에 저장된 레코드의 컬렉션 이름
+  static const String _collectionName = 'records';
 
-  CalendarDatabase._internal();
+  // CalendarDatabase의 싱글톤 인스턴스
+  static final CalendarDatabase instance = CalendarDatabase._init();
 
-  static Database? _database;
+  // 내부 생성자
+  CalendarDatabase._init();
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-
-    _database = await _initDatabase();
-    return _database!;
+  // Firestore의 컬렉션 참조를 가져오는 메서드
+  CollectionReference<Map<String, dynamic>> get _recordsCollection {
+    return _firestore.collection(_collectionName);
   }
 
-  Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'calendar.db');
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
+  // Firestore에 레코드 추가하는 메서드
+  Future<void> insertRecord(
+      String date, int duration, String startTime, String endTime) async {
+    await _recordsCollection.add({
+      'date': date,
+      'duration': duration,
+      'startTime': startTime,
+      'endTime': endTime,
+    });
   }
 
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE records (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
-        duration INTEGER NOT NULL
-      )
-    ''');
+  // 특정 날짜의 레코드를 가져오는 메서드
+  Future<Map<String, dynamic>?> getRecordByDate(String date) async {
+    final querySnapshot =
+        await _recordsCollection.where('date', isEqualTo: date).limit(1).get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      return querySnapshot.docs.first.data();
+    } else {
+      return null;
+    }
   }
 
-  Future<void> insertRecord(String date, int duration) async {
-    final db = await database;
-
-    await db.insert(
-      'records',
-      {'date': date, 'duration': duration},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<List<Map<String, dynamic>>> getRecords() async {
-    final db = await database;
-    return await db.query('records');
+  // 모든 레코드를 가져오는 메서드
+  Future<List<Map<String, dynamic>>> getAllRecords() async {
+    final querySnapshot = await _recordsCollection.get();
+    return querySnapshot.docs.map((doc) => doc.data()).toList();
   }
 }

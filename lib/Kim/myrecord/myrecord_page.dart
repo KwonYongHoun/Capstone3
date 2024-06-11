@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '/Kim/myrecord/myrecord_machine.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase Firestore 임포트
 
 class MyRecordPage extends StatefulWidget {
-  // StatelessWidget에서 StatefulWidget으로 변경
   final DateTime selectedDate;
 
   const MyRecordPage({Key? key, required this.selectedDate}) : super(key: key);
@@ -12,21 +12,34 @@ class MyRecordPage extends StatefulWidget {
 }
 
 class _MyRecordPageState extends State<MyRecordPage> {
-  late TextEditingController _startTimeController;
-  late TextEditingController _endTimeController;
+  Duration _exerciseDuration = Duration.zero;
 
   @override
   void initState() {
     super.initState();
-    _startTimeController = TextEditingController();
-    _endTimeController = TextEditingController();
+    _loadRecord(); // 운동 기록 로드
   }
 
-  @override
-  void dispose() {
-    _startTimeController.dispose();
-    _endTimeController.dispose();
-    super.dispose();
+  void _loadRecord() async {
+    String date = widget.selectedDate.toIso8601String().split('T').first;
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('records')
+        .where('date', isEqualTo: date)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      final record = querySnapshot.docs.first.data();
+      setState(() {
+        _exerciseDuration = Duration(seconds: record['duration'] ?? 0);
+      });
+    }
+  }
+
+  String formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
   @override
@@ -47,36 +60,16 @@ class _MyRecordPageState extends State<MyRecordPage> {
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          const SizedBox(height: 16),
           const Text(
-            '실제 운동한 시간',
+            '운동한 시간',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _startTimeController,
-                  decoration: const InputDecoration(
-                    labelText: '운동 시작 시간',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextFormField(
-                  controller: _endTimeController,
-                  decoration: const InputDecoration(
-                    labelText: '운동 종료 시간',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            formatDuration(_exerciseDuration),
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           const Divider(),

@@ -1,58 +1,153 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MembershipManagementPage extends StatefulWidget {
-  const MembershipManagementPage({Key? key}) : super(key: key);
-
   @override
-  State<MembershipManagementPage> createState() =>
+  _MembershipManagementPageState createState() =>
       _MembershipManagementPageState();
 }
 
 class _MembershipManagementPageState extends State<MembershipManagementPage> {
-  bool isMembershipActive = true; // 예시로 회원권 상태를 나타내는 변수입니다.
+  late String memberState;
+  late String memberNumber;
+  DateTime? registrationDate;
+  DateTime? expirationDate;
+  bool isLoading = true;
 
-  void _suspendMembership() {
+  @override
+  void initState() {
+    super.initState();
+    _loadMemberState();
+  }
+
+  Future<void> _loadMemberState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    memberNumber = prefs.getString('memberNumber') ?? '';
+    memberState = prefs.getString('memberState') ?? '';
+
+    if (memberNumber.isEmpty) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection('members')
+        .doc(memberNumber)
+        .get();
+    if (doc.exists) {
+      setState(() {
+        memberState = doc['memberState'];
+        registrationDate = _parseDate(doc['registrationDate']);
+        expirationDate = _parseDate(doc['expirationDate']);
+        isLoading = false;
+      });
+      await _checkExpirationAndUpdateState(); // 만료일 체크 및 상태 업데이트
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _updateMemberState(String newState) async {
+    await FirebaseFirestore.instance
+        .collection('members')
+        .doc(memberNumber)
+        .update({
+      'memberState': newState,
+    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('memberState', newState);
     setState(() {
-      isMembershipActive = false;
+      memberState = newState;
     });
   }
 
-  void _showMembershipDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('회원권 정지 및 이용'),
-          content: Text('회원권을 정지하시겠습니까, 아니면 계속 이용하시겠습니까?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('정지'),
-              onPressed: () {
-                _suspendMembership(); // 회원권을 정지하는 함수를 호출
-                Navigator.of(context).pop(); // 다이얼로그를 닫음
-              },
-            ),
-            TextButton(
-              child: Text('이용'),
-              onPressed: () {
-                _activateMembership(); // 회원권을 이용하는 상태로 전환하는 함수를 호출
-                Navigator.of(context).pop(); // 다이얼로그를 닫음
-              },
-            ),
-          ],
-        );
-      },
-    );
+  Future<void> _checkExpirationAndUpdateState() async {
+    if (expirationDate != null) {
+      final now = DateTime.now();
+      final expirationDateOnly = DateTime(
+          expirationDate!.year, expirationDate!.month, expirationDate!.day);
+      final todayOnly = DateTime(now.year, now.month, now.day);
+
+      if (expirationDateOnly.isAtSameMomentAs(todayOnly)) {
+        await _updateMemberState('X');
+      }
+    }
+  }
+
+  void _suspendMembership() {
+    _updateMemberState('stop');
   }
 
   void _activateMembership() {
-    setState(() {
-      isMembershipActive = true;
-    });
+    _updateMemberState('ing');
+  }
+
+  void _showMembershipDialog() {
+    if (memberState != 'ing' && memberState != 'stop') {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('알림'),
+            content: Text('멤버십을 구독해야만 가능한 메뉴입니다'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('확인'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('회원권 정지 및 이용'),
+            content: Text('회원권을 정지하시겠습니까, 아니면 계속 이용하시겠습니까?'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('정지'),
+                onPressed: () {
+                  _suspendMembership();
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('이용'),
+                onPressed: () {
+                  _activateMembership();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('회원권 관리'),
+        ),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('회원권 관리'),
@@ -77,33 +172,51 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
                 ],
               ),
               child: Row(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start, // Row 내부의 위젯들을 상단으로 정렬합니다.
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    // Column을 Expanded로 감싸서 가능한 모든 영역을 차지하도록 합니다.
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment
-                          .start, // Column의 내부 위젯들을 좌측으로 정렬합니다.
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'SPOLEX 멤버십',
                           style: TextStyle(
-                            fontSize: 24.0, // 크기를 조절하여 제목처럼 보이게 합니다.
+                            fontSize: 24.0,
                             fontWeight: FontWeight.bold,
+                            color: _getMembershipTitleColor(),
                           ),
                         ),
-                        SizedBox(height: 8), // 두 텍스트 사이에 간격을 줍니다.
+                        SizedBox(height: 8),
                         Text(
-                          isMembershipActive ? "이용 중" : "정지 중",
+                          _getMembershipStatusText(),
                           style: TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,
-                            color: isMembershipActive
-                                ? Colors.green
-                                : Colors.red, // 상태에 따라 색상을 변경합니다.
+                            color: _getMembershipStatusColor(),
                           ),
                         ),
+                        if (memberState == 'ing' || memberState == 'stop') ...[
+                          SizedBox(height: 8),
+                          if (registrationDate != null) ...[
+                            Text(
+                              '등록일: ${_formatDate(registrationDate!)}',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                          ],
+                          if (expirationDate != null) ...[
+                            Text(
+                              '만료일: ${_formatDate(expirationDate!)}',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ],
                       ],
                     ),
                   ),
@@ -115,11 +228,52 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
             ListTile(
               title: Text('회원권 정지 및 이용'),
               trailing: Icon(Icons.arrow_forward_ios),
-              onTap: _showMembershipDialog, // 여기에 메서드 호출
+              onTap: _showMembershipDialog,
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _getMembershipStatusText() {
+    if (memberState == 'ing') {
+      return '이용 중';
+    } else if (memberState == 'stop') {
+      return '정지 중';
+    } else {
+      return '멤버십을 구독해주세요';
+    }
+  }
+
+  Color _getMembershipStatusColor() {
+    if (memberState == 'ing') {
+      return Colors.green;
+    } else if (memberState == 'stop') {
+      return Colors.red;
+    } else {
+      return Colors.grey;
+    }
+  }
+
+  Color _getMembershipTitleColor() {
+    if (memberState == 'ing' || memberState == 'stop') {
+      return Colors.green;
+    } else {
+      return Colors.grey;
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  DateTime? _parseDate(dynamic date) {
+    if (date is Timestamp) {
+      return date.toDate();
+    } else if (date is String) {
+      return DateTime.tryParse(date);
+    }
+    return null;
   }
 }

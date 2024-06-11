@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../health.dart';
 import '../Sin/AuthProvider.dart';
 import 'myhomepage.dart';
 import 'findid.dart';
 import 'findpassword.dart';
 import '../Kwon/AdminMain.dart';
-
-// 입력된 아이디 비밀번호
-String enteredId = ''; // 아이디
-String enteredPassword = ''; // 비밀번호
-String enteredName = ''; // 이름
 
 class LoginPage extends StatefulWidget {
   @override
@@ -20,16 +16,73 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController idController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  bool autoLogin = false; // 자동 로그인 상태
   String errorMessage = '';
 
   @override
   void initState() {
     super.initState();
     _initializeFirebase();
+    _loadUserPreferences();
   }
 
   Future<void> _initializeFirebase() async {
     await DatabaseHelper.initialize();
+  }
+
+  Future<void> _loadUserPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool autoLoginPref = prefs.getBool('autoLogin') ?? false;
+    if (autoLoginPref) {
+      String userId = prefs.getString('userId') ?? '';
+      String userPassword = prefs.getString('userPassword') ?? '';
+      _login(userId, userPassword, autoLoginPref);
+    }
+    setState(() {
+      autoLogin = autoLoginPref;
+    });
+  }
+
+  Future<void> _updateUserPreferences(String userId, String password) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('autoLogin', autoLogin);
+    if (autoLogin) {
+      await prefs.setString('userId', userId);
+      await prefs.setString('userPassword', password);
+    } else {
+      await prefs.remove('userId');
+      await prefs.remove('userPassword');
+    }
+  }
+
+  void _login(String userId, String password, bool autoLoginEnabled) async {
+    if (userId == 'admin' && password == 'master') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => AdminModeHomePage()),
+      );
+    } else {
+      // Query the database for a member with the entered ID and password
+      List<Member> members = await DatabaseHelper.IDCheck(userId, password);
+      if (members.isNotEmpty) {
+        Member member = members.first;
+        Provider.of<AuthProvider>(context, listen: false).login(member);
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('memberNumber', member.memberNumber.toString());
+        await prefs.setString('memberState', member.memberState);
+
+        if (autoLoginEnabled) {
+          await _updateUserPreferences(userId, password);
+        }
+
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        setState(() {
+          errorMessage = '아이디 또는 비밀번호가 올바르지 않습니다.';
+        });
+      }
+    }
   }
 
   @override
@@ -38,8 +91,8 @@ class _LoginPageState extends State<LoginPage> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/로그인.png'), // 배경 이미지 경로 설정
-            fit: BoxFit.cover, // 이미지가 화면을 가득 채우도록 설정
+            image: AssetImage('assets/images/로그인.png'),
+            fit: BoxFit.cover,
           ),
         ),
         child: Padding(
@@ -94,12 +147,11 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: 20),
               TextField(
                 controller: idController,
-                style: TextStyle(color: Colors.black),
                 decoration: const InputDecoration(
                   labelText: 'ID',
                   labelStyle: TextStyle(color: Colors.grey),
-                  filled: true, // 배경을 채웁니다.
-                  fillColor: Colors.white, // 배경 색을 흰색으로 설정합니다.
+                  filled: true,
+                  fillColor: Colors.white,
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
                         color: Color.fromARGB(255, 112, 203, 245), width: 2.0),
@@ -113,12 +165,12 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: 12),
               TextField(
                 controller: passwordController,
-                style: TextStyle(color: Colors.black),
+                obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'PASSWORD',
                   labelStyle: TextStyle(color: Colors.grey),
-                  filled: true, // 배경을 채웁니다.
-                  fillColor: Colors.white, // 배경 색을 흰색으로 설정합니다.
+                  filled: true,
+                  fillColor: Colors.white,
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
                         color: Color.fromARGB(255, 112, 203, 245), width: 2.0),
@@ -128,40 +180,32 @@ class _LoginPageState extends State<LoginPage> {
                         color: Color.fromARGB(255, 112, 203, 245), width: 2.0),
                   ),
                 ),
-                obscureText: true,
+              ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: autoLogin,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        autoLogin = value!;
+                      });
+                    },
+                    activeColor: Colors.green, // 선택된 상태의 배경색
+                    checkColor: Colors.white, // 체크 표시의 색상
+                    fillColor: MaterialStateProperty.resolveWith<Color>(
+                        (Set<MaterialState> states) {
+                      if (states.contains(MaterialState.selected))
+                        return Colors.green; // 선택 상태일 때의 배경색
+                      return Colors.grey; // 기본 배경색
+                    }),
+                  ),
+                  const Text('자동 로그인'),
+                ],
               ),
               SizedBox(height: 40),
               ElevatedButton(
-                onPressed: () async {
-                  String enteredId = idController.text;
-                  String enteredPassword = passwordController.text;
-
-                  // 관리자모드 실행 : Id admin / 비밀번호 master
-                  if (enteredId == 'admin' && enteredPassword == 'master') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AdminModeHomePage()),
-                    );
-                    return;
-                  }
-
-                  // Query the database for a member with the entered ID and password
-                  List<Member> members =
-                      await DatabaseHelper.IDCheck(enteredId, enteredPassword);
-
-                  if (members.isNotEmpty) {
-                    // Login successful
-                    Provider.of<AuthProvider>(context, listen: false)
-                        .login(members.first);
-
-                    Navigator.pushReplacementNamed(context, '/home');
-                  } else {
-                    // Invalid ID or password
-                    setState(() {
-                      errorMessage = '아이디 또는 비밀번호가 올바르지 않습니다.';
-                    });
-                  }
+                onPressed: () {
+                  _login(idController.text, passwordController.text, autoLogin);
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: Size(250, 50),
@@ -184,7 +228,6 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   TextButton(
                     onPressed: () {
-                      // FindIdPage로 이동
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => FindId()),
@@ -200,7 +243,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      // FindPassword로 이동
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => FindPassword()),

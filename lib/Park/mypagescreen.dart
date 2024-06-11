@@ -90,7 +90,7 @@ class _MyPageScreenState extends State<MypageScreen> {
                         leading: CircleAvatar(
                           radius: 30.0,
                           backgroundColor: Colors.green[100],
-                          child: Icon(Icons.person, size: 25.0),
+                          child: Icon(Icons.person, size: 40.0),
                         ),
                         title: Text('$name 님'),
                         subtitle: Text('회원번호: $id'),

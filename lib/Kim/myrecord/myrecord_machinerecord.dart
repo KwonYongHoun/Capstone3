@@ -17,15 +17,16 @@ class DatabaseManager {
     );
   }
 
-  Future<void> insertExercise(
-      String exercise, int reps, int weight, double distance) async {
+  Future<void> insertExercise(String exercise, int reps, int weight,
+      double distance, DateTime exerciseTime) async {
     await _database.insert(
       'exercises',
       {
         'exercise': exercise,
         'reps': reps,
         'weight': weight,
-        'distance': distance
+        'distance': distance,
+        'exerciseTime': exerciseTime.toIso8601String(),
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -42,17 +43,27 @@ class MyRecordMachineRecord extends StatefulWidget {
 }
 
 class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
+  final DatabaseManager _databaseManager =
+      DatabaseManager(); // DatabaseManager 인스턴스 생성
   List<SetData> sets = [];
   bool _isSaved = false;
   String _selectedIntensity = ''; // 운동 강도를 저장할 변수
   final _exerciseTimeController =
       TextEditingController(); // 운동 시간을 입력 받을 컨트롤러 생성
 
+  List<Map<String, dynamic>> _detailedRecords = []; // 상세 기록을 저장할 리스트
+
   @override
   void initState() {
     super.initState();
     // 처음에 하나의 세트를 추가합니다.
     sets.add(SetData(weight: 0, reps: 0));
+  }
+
+  void _addDetailedRecords(List<Map<String, dynamic>> records) {
+    setState(() {
+      _detailedRecords.addAll(records);
+    });
   }
 
   @override
@@ -79,7 +90,7 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
                   borderSide: BorderSide(color: Colors.green), // 기본 상태의 테두리 색
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green), // 선택된 상태의 테두리 색
+                  borderSide: BorderSide(color: Colors.green), // 선택된 상태
                 ),
               ),
             ),
@@ -107,7 +118,9 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => DetailedRecordScreen(),
+                    builder: (context) => DetailedRecordScreen(
+                      onRecordSaved: _addDetailedRecords,
+                    ),
                   ),
                 );
               },
@@ -140,12 +153,23 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
               child: Column(
                 children: [
                   const SizedBox(height: 8), // 추가된 간격
+                  if (_detailedRecords.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (int i = 0; i < _detailedRecords.length; i++) ...[
+                          Text(
+                            '세트${i + 1} ${_detailedRecords[i]['weight'] != null ? '${_detailedRecords[i]['weight']}kg ' : ''}${_detailedRecords[i]['type']}: ${_detailedRecords[i]['reps'] ?? ''} ${_detailedRecords[i]['weight'] != null && _detailedRecords[i]['reps'] != null ? ' ' : ''} ${_detailedRecords[i]['distance'] != null ? '${_detailedRecords[i]['distance']} km' : ''}',
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ],
+                    ),
                   ElevatedButton(
                     onPressed: () {
-                      // 추가하기 버튼 클릭 시
+                      // 기록 저장 버튼 클릭 시 처리할 내용
                       // 여기에 추가 작업 구현
-                      //DatabaseManager().insertRecord(_exerciseTimeController
-                      //  .text); // 입력된 운동 시간을 데이터베이스에 저장
+                      // DatabaseManager().insertRecord(_exerciseTimeController.text); // 입력된 운동 시간을 데이터베이스에 저장
 
                       // '기록 저장'을 눌렀을 때 '저장 되었습니다' 문구를 보여줍니다.
                       setState(() {
@@ -160,6 +184,18 @@ class _MyRecordMachineRecordState extends State<MyRecordMachineRecord> {
                       });
                     },
                     child: const Text('기록 저장'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white, // 배경색을 하얀색으로 설정
+                      side: const BorderSide(
+                          color: Colors.green), // 테두리 색상을 초록색으로 설정
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(20), // 버튼의 모서리를 둥글게 설정
+                      ),
+                    ).copyWith(
+                      foregroundColor: MaterialStateProperty.all<Color>(
+                          Colors.black), // 텍스트 색상을 검정색으로 설정
+                    ),
                   ),
                   // '저장 되었습니다' 문구 표시
                   if (_isSaved)
@@ -240,6 +276,10 @@ class _ExerciseIntensitySelectorState extends State<ExerciseIntensitySelector> {
 }
 
 class DetailedRecordScreen extends StatefulWidget {
+  final Function(List<Map<String, dynamic>>) onRecordSaved;
+
+  DetailedRecordScreen({required this.onRecordSaved});
+
   @override
   _DetailedRecordScreenState createState() => _DetailedRecordScreenState();
 }
@@ -345,6 +385,10 @@ class _DetailedRecordScreenState extends State<DetailedRecordScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     // 여기에 저장 작업 구현
+                    // 상세 기록을 저장합니다.
+                    widget.onRecordSaved(_collectRecords());
+                    // 이전 화면으로 돌아갑니다.
+                    Navigator.pop(context);
                   },
                   child: const Text('입력 하기'),
                   style: ElevatedButton.styleFrom(
@@ -373,6 +417,31 @@ class _DetailedRecordScreenState extends State<DetailedRecordScreen> {
     }
   }
 
+  // 입력된 기록을 수집하는 메서드
+  List<Map<String, dynamic>> _collectRecords() {
+    List<Map<String, dynamic>> records = [];
+    for (int i = 0; i < _repControllers.length; i++) {
+      Map<String, dynamic> record = {};
+      if (_selectedType == '횟수') {
+        record['type'] = '횟수';
+        record['reps'] = int.tryParse(_repControllers[i].text) ?? 0;
+      } else if (_selectedType == '무게') {
+        record['type'] = '무게';
+        record['weight'] = int.tryParse(_weightControllers[i].text) ?? 0;
+        record['reps'] = int.tryParse(_repControllers[i].text) ?? 0;
+      } else if (_selectedType == '거리') {
+        record['type'] = '거리';
+        record['distance'] =
+            double.tryParse(_distanceControllers[i].text) ?? 0.0;
+      }
+      record['exerciseTime'] =
+          DateTime.now().toIso8601String(); // 타임스탬프를 문자열로 변환하여 저장
+      records.add(record);
+    }
+    return records;
+  }
+
+  // 입력 폼을 구성하는 메서드
   Widget _buildInputForm() {
     List<Widget> formFields = [];
     for (int i = 0; i < _repControllers.length; i++) {

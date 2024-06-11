@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:health/Kim/record/myrecord_page.dart';
-import 'package:health/Kim/record/myrecord_statistic.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase Firestore 임포트
+import '/Kim/myrecord/myrecord_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '/Kim/database/calendar_database.dart'; // 데이터베이스 파일 임포트
 import 'dart:async';
 
-// 문제: 현재 달이 아닌 다른 달의 날짜를 선택하려고 하면 선택이 되지 않고 현재의 달로 되돌아옴
 void main() {
   runApp(const MyApp());
 }

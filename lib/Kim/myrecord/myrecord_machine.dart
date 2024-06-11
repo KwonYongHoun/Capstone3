@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:health/Kim/record/myrecord_machinerecord.dart';
+import '/Kim/myrecord/myrecord_machinerecord.dart';
 
 class MyRecordMachinePage extends StatelessWidget {
   final String exercise;

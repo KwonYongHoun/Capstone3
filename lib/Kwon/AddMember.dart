@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../health.dart';
+import '../Sin/AuthProvider.dart';
 
 class AddMemberDialog extends StatefulWidget {
   final int currentMemberNumber;
@@ -18,6 +20,7 @@ class AddMemberDialog extends StatefulWidget {
 class _AddMemberDialogState extends State<AddMemberDialog> {
   late TextEditingController _nameController;
   late TextEditingController _phoneNumberController;
+  late TextEditingController _nicknameController;
   late TextEditingController _memberStateController;
   late DateTime _registrationDate;
   late DateTime _expirationDate;
@@ -26,6 +29,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController();
+    _nicknameController = TextEditingController();
     _phoneNumberController = TextEditingController();
     _memberStateController = TextEditingController();
     _registrationDate = DateTime.now();
@@ -91,28 +95,29 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       ),
       actions: [
         ElevatedButton(
-          onPressed: () async {
+          onPressed: () {
             final member = Member(
               memberNumber: widget.currentMemberNumber,
               password: _phoneNumberController.text,
               name: _nameController.text,
+              nickname: _nicknameController.text,
               phoneNumber: _phoneNumberController.text,
               registrationDate: _registrationDate,
               expirationDate: _expirationDate,
               memberState: _memberStateController.text,
             );
-            await DatabaseHelper.insertMember(member); // 회원 추가
-            Navigator.pop(context); // 다이얼로그 닫기
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('회원이 추가되었습니다.')),
-            );
-            widget.reloadMembers(); // 회원 목록 다시 로드
+
+            // 회원 추가
+            DatabaseHelper.insertMember(member);
+
+            Navigator.pop(context);
+            widget.reloadMembers();
           },
           child: Text('추가'),
         ),
         TextButton(
           onPressed: () {
-            Navigator.pop(context); // 다이얼로그 닫기
+            Navigator.pop(context);
           },
           child: Text('취소'),
         ),

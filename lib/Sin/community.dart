@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../health.dart';
 import 'posts_list.dart';
 import 'search.dart'; // CustomSearchDelegate import
+import 'ScrapedList.dart'; // ScrapedPostsListPage import 추가
 
 class CommunityPage extends StatelessWidget {
   final List<Commu> allPosts; // 모든 게시물 리스트
@@ -29,7 +30,13 @@ class CommunityPage extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.bookmark),
               onPressed: () {
-                // 스크랩 기능 추가
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ScrapedPostsListPage(), // 스크랩된 게시물 목록 화면으로 이동
+                  ),
+                );
               },
             ),
           ],
@@ -52,7 +59,7 @@ class CommunityPage extends StatelessWidget {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.only(top: 10), // 상단바와 자유게시판 사이 간격 조정
+        padding: EdgeInsets.only(top: 0), // 상단바와 자유게시판 사이 간격 조정
         child: Column(
           children: [
             _buildBoardButton(context, "자유게시판", 'assets/images/b.b_1.png', () {

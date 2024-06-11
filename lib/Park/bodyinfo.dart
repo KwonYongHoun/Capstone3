@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../Sin/AuthProvider.dart';
+import '../health.dart';
+import 'mypagescreen.dart';
 
 class BodyInfoPage extends StatefulWidget {
   @override
@@ -16,6 +20,33 @@ class _BodyInfoPageState extends State<BodyInfoPage> {
     super.dispose();
   }
 
+  Future<void> _updateBodyInfo() async {
+    double? height = double.tryParse(_heightController.text);
+    double? weight = double.tryParse(_weightController.text);
+
+    if (height == null || weight == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('유효한 키와 몸무게를 입력해 주세요.')),
+      );
+      return;
+    }
+
+    final loggedInMember =
+        Provider.of<AuthProvider>(context, listen: false).loggedInMember;
+
+    if (loggedInMember == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('사용자 정보를 불러올 수 없습니다.')),
+      );
+      return;
+    }
+
+    await DatabaseHelper.updateBodyInfo(
+        loggedInMember.memberNumber, height, weight);
+
+    Navigator.pop(context, {'height': height, 'weight': weight});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,16 +58,12 @@ class _BodyInfoPageState extends State<BodyInfoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            SizedBox(
-              height: 30.0,
-            ),
+            SizedBox(height: 30.0),
             Text(
               '키(cm)',
               style: TextStyle(fontSize: 16, color: Colors.black),
             ),
-            SizedBox(
-              height: 10.0,
-            ),
+            SizedBox(height: 10.0),
             TextField(
               controller: _heightController,
               decoration: InputDecoration(
@@ -50,16 +77,12 @@ class _BodyInfoPageState extends State<BodyInfoPage> {
               ),
               keyboardType: TextInputType.number,
             ),
-            SizedBox(
-              height: 30.0,
-            ),
+            SizedBox(height: 30.0),
             Text(
               '몸무게(kg)',
               style: TextStyle(fontSize: 16, color: Colors.black),
             ),
-            SizedBox(
-              height: 10.0,
-            ),
+            SizedBox(height: 10.0),
             TextField(
               controller: _weightController,
               decoration: InputDecoration(
@@ -73,21 +96,21 @@ class _BodyInfoPageState extends State<BodyInfoPage> {
               ),
               keyboardType: TextInputType.number,
             ),
-            Spacer(), // 나머지 공간을 모두 차지하도록 Spacer 추가
+            Spacer(),
             Padding(
-              padding: const EdgeInsets.only(bottom: 20.0), // 하단 여백 조정
+              padding: const EdgeInsets.only(bottom: 20.0),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _updateBodyInfo,
                 child: Text('변경하기',
                     style: TextStyle(
                         fontWeight: FontWeight.bold, color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
-                  padding: EdgeInsets.symmetric(vertical: 20.0), // 수직 패딩 조정
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(13.0),
                   ),
-                  minimumSize: Size.fromHeight(50), // 버튼의 최소 높이 지정
+                  minimumSize: Size.fromHeight(50),
                 ),
               ),
             ),

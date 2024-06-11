@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:health/Kim/record/myrecord_machine.dart';
+import '/Kim/myrecord/myrecord_machine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase Firestore 임포트
 
 class MyRecordPage extends StatefulWidget {

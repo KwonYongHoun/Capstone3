@@ -86,6 +86,12 @@
       "languageVersion": "3.3"
     },
     {
+      "name": "file",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/file-7.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "firebase_auth",
       "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_auth-4.20.0",
       "packageUri": "lib/",
@@ -314,6 +320,48 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "shared_preferences",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences-2.2.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "shared_preferences_android",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_android-2.2.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "shared_preferences_foundation",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_foundation-2.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "shared_preferences_linux",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_linux-2.3.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "shared_preferences_platform_interface",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_platform_interface-2.3.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "shared_preferences_web",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_web-2.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "shared_preferences_windows",
+      "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/shared_preferences_windows-2.3.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
       "name": "simple_gesture_detector",
       "rootUri": "file:///C:/Users/shinj/AppData/Local/Pub/Cache/hosted/pub.dev/simple_gesture_detector-0.2.1",
       "packageUri": "lib/",
@@ -518,7 +566,7 @@
       "languageVersion": "3.3"
     }
   ],
-  "generated": "2024-06-11T11:11:54.775320Z",
+  "generated": "2024-06-11T11:12:52.359036Z",
   "generator": "pub",
   "generatorVersion": "3.4.1",
   "flutterRoot": "file:///C:/Users/shinj/flutter",

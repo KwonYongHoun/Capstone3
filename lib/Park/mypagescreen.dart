@@ -8,6 +8,7 @@ import 'bodyinfo.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../health.dart';
 import '../Sin/AuthProvider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MypageScreen extends StatefulWidget {
   const MypageScreen({super.key});
@@ -90,7 +91,7 @@ class _MyPageScreenState extends State<MypageScreen> {
                         leading: CircleAvatar(
                           radius: 30.0,
                           backgroundColor: Colors.green[100],
-                          child: Icon(Icons.person, size: 25.0),
+                          child: Icon(Icons.person, size: 40.0),
                         ),
                         title: Text('$name 님'),
                         subtitle: Text('회원번호: $id'),
@@ -204,17 +205,27 @@ class _MyPageScreenState extends State<MypageScreen> {
             TextButton(
               child: Text('취소'),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // 대화상자 닫기
               },
             ),
             TextButton(
               child: Text('확인'),
-              onPressed: () {
+              onPressed: () async {
+                // SharedPreferences를 사용하여 자동 로그인 비활성화
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('autoLogin', false); // 자동 로그인 비활성화
+                await prefs.remove('userId'); // 사용자 ID 삭제
+                await prefs.remove('userPassword'); // 사용자 비밀번호 삭제
+
+                // Provider를 사용하여 로그아웃 수행
                 Provider.of<AuthProvider>(context, listen: false).logout();
-                Navigator.of(context).pop(); // 다이얼로그 닫기
-                Navigator.of(context).pushReplacement(
+                Navigator.of(context).pop(); // 대화상자 닫기
+
+                // 모든 라우트를 제거하고 로그인 페이지로 이동
+                Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => LoginPage()),
-                ); // LoginPage로 이동
+                  (Route<dynamic> route) => false,
+                );
               },
             ),
           ],

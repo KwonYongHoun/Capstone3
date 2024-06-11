@@ -81,7 +81,7 @@ class AdminModeHomePage extends StatelessWidget {
               onPressed: () async {
                 // 테스트 데이터 Firestore에 추가
                 FirebaseFirestore.instance.collection('entryLogs').add({
-                  'memberId': 'testMemberId',
+                  'memberId': 'test1',
                   'timestamp': FieldValue.serverTimestamp(),
                 });
                 print('Logged entry for test QR Code');

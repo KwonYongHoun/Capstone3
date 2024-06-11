@@ -36,41 +36,57 @@ class _ReportedPostsPageState extends State<ReportedPostsPage> {
                 itemBuilder: (context, index) {
                   final post = reportedPosts[index];
                   final commu = Commu.fromFirestore(post);
-                  return ListTile(
-                    title: Text(commu.title),
-                    subtitle: Text(
-                      '신고 횟수: ${commu.reportCount}\n작성자: ${commu.name ?? 'Unknown'}',
-                    ),
-                    onTap: () {
-                      // 게시물 상세보기 페이지로 이동
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PostDetailPage(
-                            post: commu,
-                            onCommentAdded: () {
-                              // 필요한 경우 처리
-                            },
+                  return Card(
+                    margin: EdgeInsets.only(bottom: 16.0),
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            commu.title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.0,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            _deletePostAndReport(commu.postID!); // posts 컬렉션에서 게시물 삭제 및 reports 컬렉션에서 신고 기록 삭제
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.clear),
-                          onPressed: () {
-                            _deleteReport(post.id); // reports 컬렉션에서 신고 기록만 삭제
-                          },
-                        ),
-                      ],
+                          SizedBox(height: 4.0),
+                          Text(
+                            commu.content,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 14.0,
+                            ),
+                          ),
+                          SizedBox(height: 8.0),
+                          Text(
+                            '신고 횟수: ${commu.reportCount}\n작성자: ${commu.name ?? 'Unknown'}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          SizedBox(height: 8.0),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: () {
+                                  _deletePostAndReport(commu.postID!); // posts 컬렉션에서 게시물 삭제 및 reports 컬렉션에서 신고 기록 삭제
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.clear),
+                                onPressed: () {
+                                  _deleteReport(post.id); // reports 컬렉션에서 신고 기록만 삭제
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../health.dart';
 
 class MembershipManagementPage extends StatefulWidget {
   @override
@@ -13,7 +14,12 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
   late String memberNumber;
   DateTime? registrationDate;
   DateTime? expirationDate;
+  DateTime? suspendStartDate;
+  DateTime? suspendEndDate;
+  TextEditingController _suspendReasonController = TextEditingController();
   bool isLoading = true;
+
+  final MembershipService _membershipService = MembershipService();
 
   @override
   void initState() {
@@ -33,18 +39,18 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
       return;
     }
 
-    DocumentSnapshot doc = await FirebaseFirestore.instance
-        .collection('members')
-        .doc(memberNumber)
-        .get();
-    if (doc.exists) {
+    var memberData = await _membershipService.getMemberData(memberNumber);
+    if (memberData != null) {
       setState(() {
-        memberState = doc['memberState'];
-        registrationDate = _parseDate(doc['registrationDate']);
-        expirationDate = _parseDate(doc['expirationDate']);
+        memberState = memberData['memberState'];
+        registrationDate = _parseDate(memberData['registrationDate']);
+        expirationDate = _parseDate(memberData['expirationDate']);
+        suspendStartDate = _parseDate(prefs.getString('suspendStartDate'));
+        suspendEndDate = _parseDate(prefs.getString('suspendEndDate'));
+        _suspendReasonController.text = prefs.getString('suspendReason') ?? '';
         isLoading = false;
       });
-      await _checkExpirationAndUpdateState(); // 만료일 체크 및 상태 업데이트
+      await _checkExpirationAndUpdateState();
     } else {
       setState(() {
         isLoading = false;
@@ -52,17 +58,15 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
     }
   }
 
-  Future<void> _updateMemberState(String newState) async {
-    await FirebaseFirestore.instance
-        .collection('members')
-        .doc(memberNumber)
-        .update({
-      'memberState': newState,
-    });
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('memberState', newState);
+  Future<void> _updateMemberState(String newState,
+      {DateTime? newExpirationDate}) async {
+    await _membershipService.updateMemberState(memberNumber, newState,
+        newExpirationDate: newExpirationDate);
     setState(() {
       memberState = newState;
+      if (newExpirationDate != null) {
+        expirationDate = newExpirationDate;
+      }
     });
   }
 
@@ -77,24 +81,59 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
         await _updateMemberState('X');
       }
     }
+
+    if (suspendEndDate != null) {
+      final now = DateTime.now();
+      final suspendEndDateOnly = DateTime(
+          suspendEndDate!.year, suspendEndDate!.month, suspendEndDate!.day);
+      final todayOnly = DateTime(now.year, now.month, now.day);
+
+      if (suspendEndDateOnly.isBefore(todayOnly)) {
+        await _membershipService.updateMemberState(memberNumber, 'ing');
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+            'lastSuspendEndDate', suspendEndDate!.toIso8601String());
+        await prefs.remove('suspendStartDate');
+        await prefs.remove('suspendEndDate');
+        await prefs.remove('suspendReason');
+        setState(() {
+          suspendStartDate = null;
+          suspendEndDate = null;
+          _suspendReasonController.clear();
+        });
+      }
+    }
   }
 
-  void _suspendMembership() {
-    _updateMemberState('stop');
+  void _selectSuspendPeriod() async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null) {
+      setState(() {
+        suspendStartDate = picked.start;
+        suspendEndDate = picked.end;
+      });
+    }
   }
 
-  void _activateMembership() {
-    _updateMemberState('ing');
-  }
+  void _showSuspendMembershipDialog() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? lastSuspendEndDateStr = prefs.getString('lastSuspendEndDate');
+    DateTime? lastSuspendEndDate = lastSuspendEndDateStr != null
+        ? DateTime.parse(lastSuspendEndDateStr)
+        : null;
 
-  void _showMembershipDialog() {
     if (memberState != 'ing' && memberState != 'stop') {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text('알림'),
-            content: Text('멤버십을 구독해야만 가능한 메뉴입니다'),
+            content: Text('멤버십을 구독해주세요'),
             actions: <Widget>[
               TextButton(
                 child: Text('확인'),
@@ -106,25 +145,20 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
           );
         },
       );
-    } else {
+      return;
+    }
+
+    if (memberState == 'stop') {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('회원권 정지 및 이용'),
-            content: Text('회원권을 정지하시겠습니까, 아니면 계속 이용하시겠습니까?'),
+            title: Text('알림'),
+            content: Text('이미 멤버십이 정지 중입니다.'),
             actions: <Widget>[
               TextButton(
-                child: Text('정지'),
+                child: Text('확인'),
                 onPressed: () {
-                  _suspendMembership();
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                child: Text('이용'),
-                onPressed: () {
-                  _activateMembership();
                   Navigator.of(context).pop();
                 },
               ),
@@ -132,6 +166,98 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
           );
         },
       );
+      return;
+    }
+
+    if (lastSuspendEndDate != null) {
+      final now = DateTime.now();
+      final allowedSuspendDate = lastSuspendEndDate.add(Duration(days: 30));
+
+      if (now.isBefore(allowedSuspendDate)) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('알림'),
+              content: Text(
+                  '정지가 풀린 후 한 달 동안 다시 정지할 수 없습니다. 다음 정지 가능 날짜: ${_formatDate(allowedSuspendDate)}'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('확인'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+        return;
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('회원권 정지'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text('회원권을 정지하시겠습니까?'),
+              SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: _selectSuspendPeriod,
+                child: Text('정지 기간 선택'),
+              ),
+              if (suspendStartDate != null && suspendEndDate != null)
+                Text(
+                    '선택된 기간: ${_formatDate(suspendStartDate!)} - ${_formatDate(suspendEndDate!)}'),
+              TextField(
+                controller: _suspendReasonController,
+                decoration: InputDecoration(labelText: '정지 사유'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                _confirmSuspend();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmSuspend() async {
+    if (suspendStartDate != null && suspendEndDate != null) {
+      int suspendDays = suspendEndDate!.difference(suspendStartDate!).inDays;
+      DateTime newExpirationDate =
+          expirationDate!.add(Duration(days: suspendDays));
+
+      await _membershipService.updateMemberState(memberNumber, 'stop',
+          newExpirationDate: newExpirationDate);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          'suspendStartDate', suspendStartDate!.toIso8601String());
+      await prefs.setString(
+          'suspendEndDate', suspendEndDate!.toIso8601String());
+      await prefs.setString('suspendReason', _suspendReasonController.text);
+
+      setState(() {
+        memberState = 'stop';
+        expirationDate = newExpirationDate;
+      });
     }
   }
 
@@ -216,6 +342,24 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
                               ),
                             ),
                           ],
+                          if (memberState == 'stop' &&
+                              suspendStartDate != null &&
+                              suspendEndDate != null) ...[
+                            Text(
+                              '정지 기간: ${_formatDate(suspendStartDate!)} - ${_formatDate(suspendEndDate!)}',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            Text(
+                              '정지 사유: ${_suspendReasonController.text}',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ],
                       ],
                     ),
@@ -226,9 +370,9 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
             SizedBox(height: 20),
             Divider(),
             ListTile(
-              title: Text('회원권 정지 및 이용'),
+              title: Text('회원권 정지'),
               trailing: Icon(Icons.arrow_forward_ios),
-              onTap: _showMembershipDialog,
+              onTap: _showSuspendMembershipDialog,
             ),
           ],
         ),

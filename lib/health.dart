@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Member {
   final int memberNumber;
@@ -42,11 +43,12 @@ class Member {
       name: map['name'],
       nickname: map['nickname'] ?? '',
       phoneNumber: map['phoneNumber'],
-      registrationDate: DateTime.parse(map['registrationDate']),
-      expirationDate: DateTime.parse(map['expirationDate']),
+      registrationDate: _parseDate(map['registrationDate']),
+      expirationDate: _parseDate(map['expirationDate']),
       memberState: map['memberState'],
     );
   }
+
   factory Member.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return Member(
@@ -55,19 +57,19 @@ class Member {
       name: data['name'],
       nickname: data['nickname'] ?? '',
       phoneNumber: data['phoneNumber'],
-      registrationDate: _toDateTime(data['registrationDate']),
-      expirationDate: _toDateTime(data['expirationDate']),
+      registrationDate: _parseDate(data['registrationDate']),
+      expirationDate: _parseDate(data['expirationDate']),
       memberState: data['memberState'],
     );
   }
 
-  static DateTime _toDateTime(dynamic timestamp) {
-    if (timestamp is Timestamp) {
-      return timestamp.toDate();
-    } else if (timestamp is String) {
-      return DateTime.parse(timestamp);
+  static DateTime _parseDate(dynamic date) {
+    if (date is Timestamp) {
+      return date.toDate();
+    } else if (date is String) {
+      return DateTime.parse(date);
     } else {
-      throw ArgumentError('Invalid timestamp format');
+      throw ArgumentError('Invalid date format');
     }
   }
 
@@ -261,6 +263,48 @@ class BodyInfo {
       height: data['height'],
       weight: data['weight'],
     );
+  }
+}
+
+// MembershipService 클래스 정의
+class MembershipService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const String membersCollection = 'members';
+
+  Future<Map<String, dynamic>?> getMemberData(String memberNumber) async {
+    DocumentSnapshot doc =
+        await _firestore.collection(membersCollection).doc(memberNumber).get();
+    if (doc.exists) {
+      return doc.data() as Map<String, dynamic>?;
+    }
+    return null;
+  }
+
+  Future<void> updateMemberState(String memberNumber, String newState,
+      {DateTime? newExpirationDate}) async {
+    Map<String, dynamic> updateData = {'memberState': newState};
+    if (newExpirationDate != null) {
+      updateData['expirationDate'] = newExpirationDate;
+    }
+
+    await _firestore
+        .collection(membersCollection)
+        .doc(memberNumber)
+        .update(updateData);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('memberState', newState);
+    if (newExpirationDate != null) {
+      prefs.setString('expirationDate', newExpirationDate.toIso8601String());
+    }
+  }
+
+  DateTime? parseDate(dynamic date) {
+    if (date is Timestamp) {
+      return date.toDate();
+    } else if (date is String) {
+      return DateTime.tryParse(date);
+    }
+    return null;
   }
 }
 
@@ -616,4 +660,6 @@ class DatabaseHelper {
     }
     return 'Unknown';
   }
+
+  // 회원권
 }

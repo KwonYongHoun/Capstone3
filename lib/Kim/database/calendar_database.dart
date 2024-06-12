@@ -18,32 +18,41 @@ class CalendarDatabase {
     return _firestore.collection(_collectionName);
   }
 
-  // Firestore에 레코드 추가하는 메서드
+  // Firestore에 레코드를 추가하는 메서드
   Future<void> insertRecord(
-      String date, int duration, String startTime, String endTime) async {
-    await _recordsCollection.add({
+      String memberNumber, String date, int duration) async {
+    String docId = '$memberNumber$date'; // 변경된 로직
+    await _recordsCollection.doc(docId).set({
+      'memberNumber': memberNumber,
       'date': date,
       'duration': duration,
-      'startTime': startTime,
-      'endTime': endTime,
     });
   }
 
-  // 특정 날짜의 레코드를 가져오는 메서드
-  Future<Map<String, dynamic>?> getRecordByDate(String date) async {
-    final querySnapshot =
-        await _recordsCollection.where('date', isEqualTo: date).limit(1).get();
+  // 특정 사용자의 특정 날짜의 레코드를 가져오는 메서드
+  Future<Map<String, dynamic>?> getRecordByDate(
+      String memberNumber, String date) async {
+    String docId = '$memberNumber$date';
+    final docSnapshot = await _recordsCollection.doc(docId).get();
 
-    if (querySnapshot.docs.isNotEmpty) {
-      return querySnapshot.docs.first.data();
+    if (docSnapshot.exists) {
+      return docSnapshot.data();
     } else {
       return null;
     }
   }
 
-  // 모든 레코드를 가져오는 메서드
-  Future<List<Map<String, dynamic>>> getAllRecords() async {
-    final querySnapshot = await _recordsCollection.get();
+  // 특정 사용자의 모든 레코드를 가져오는 메서드
+  Future<List<Map<String, dynamic>>> getAllRecords(String memberNumber) async {
+    final querySnapshot = await _recordsCollection
+        .where('memberNumber', isEqualTo: memberNumber)
+        .get();
     return querySnapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  // 특정 사용자의 특정 날짜의 레코드를 삭제하는 메서드
+  Future<void> deleteRecord(String memberNumber, String date) async {
+    String docId = '$memberNumber$date';
+    await _recordsCollection.doc(docId).delete();
   }
 }

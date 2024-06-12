@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:provider/provider.dart';
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '/Kim/myrecord/myrecord_page.dart';
 import '/Kim/myrecord/myrecord_machine.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase Firestore 임포트
+import '../database/calendar_database.dart'; // 데이터베이스 파일 임포트
+import '/Sin/AuthProvider.dart';
 
 class MyRecordPage extends StatefulWidget {
+  // StatelessWidget에서 StatefulWidget으로 변경
   final DateTime selectedDate;
 
   const MyRecordPage({Key? key, required this.selectedDate}) : super(key: key);
@@ -12,34 +19,51 @@ class MyRecordPage extends StatefulWidget {
 }
 
 class _MyRecordPageState extends State<MyRecordPage> {
-  Duration _exerciseDuration = Duration.zero;
+  late TextEditingController _startTimeController;
+  late TextEditingController _endTimeController;
+  int _exerciseDuration = 0; // 해당 일자에 운동한 시간
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    _loadRecord(); // 운동 기록 로드
+    _startTimeController = TextEditingController();
+    _endTimeController = TextEditingController();
+    _loadExerciseDuration(); // 해당 일자에 운동한 시간 로드
+    _timer = Timer(Duration.zero, () {});
   }
 
-  void _loadRecord() async {
-    String date = widget.selectedDate.toIso8601String().split('T').first;
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('records')
-        .where('date', isEqualTo: date)
-        .get();
+  @override
+  void dispose() {
+    _startTimeController.dispose();
+    _endTimeController.dispose();
+    super.dispose();
+  }
 
-    if (querySnapshot.docs.isNotEmpty) {
-      final record = querySnapshot.docs.first.data();
-      setState(() {
-        _exerciseDuration = Duration(seconds: record['duration'] ?? 0);
-      });
+  String _formatDuration(int duration) {
+    Duration dur = Duration(seconds: duration);
+    return '${dur.inHours.toString().padLeft(2, '0')}:${(dur.inMinutes % 60).toString().padLeft(2, '0')}:${(dur.inSeconds % 60).toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _loadExerciseDuration() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final memberNumber = authProvider.loggedInMemberNumber?.toString() ?? '';
+
+    if (memberNumber.isNotEmpty) {
+      final record = await CalendarDatabase.instance.getRecordByDate(
+          memberNumber, widget.selectedDate.toIso8601String().split('T')[0]);
+      print('Database record for ${widget.selectedDate}: $record');
+
+      if (record != null) {
+        setState(() {
+          _exerciseDuration = record['duration'] as int;
+        });
+      } else {
+        setState(() {
+          _exerciseDuration = 0; // 해당 일자에 운동한 시간이 없으면 0으로 설정
+        });
+      }
     }
-  }
-
-  String formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
   @override
@@ -57,21 +81,42 @@ class _MyRecordPageState extends State<MyRecordPage> {
           Text(
             '${widget.selectedDate.month}월 ${widget.selectedDate.day}일',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          const Text(
-            '운동한 시간',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            formatDuration(_exerciseDuration),
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
           const SizedBox(height: 16),
+
+          Container(
+            width: 100,
+            padding: EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.blue, // 선의 색상
+                width: 2, // 선의 두께
+              ),
+              borderRadius: BorderRadius.circular(10), // 박스의 모서리를 둥글게 만듦
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '오늘의 운동 시간 ',
+                  style: const TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  '${_formatDuration(_exerciseDuration)}',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
           const Divider(),
           const SizedBox(height: 16),
           const SizedBox(height: 5), // '운동 부위'와 버튼 사이의 간격 조절
@@ -114,6 +159,9 @@ class _MyRecordPageState extends State<MyRecordPage> {
             MaterialPageRoute(
               builder: (context) => MyRecordMachinePage(
                 exercise: text,
+                selectedDate: widget.selectedDate
+                    .toIso8601String()
+                    .split('T')[0], // 선택한 날짜를 전달
               ),
             ),
           );

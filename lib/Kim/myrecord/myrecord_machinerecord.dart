@@ -1,31 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-class DatabaseManager {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-
-  Future<void> saveExerciseRecord({
-    required String memberNumber,
-    required String exerciseName,
-    required String exerciseDate,
-    required String exerciseTime,
-    required String exerciseIntensity,
-    required List<Map<String, dynamic>> detailedRecord,
-  }) async {
-    try {
-      await _db.collection('exercises').add({
-        'memberNumber': memberNumber,
-        'exerciseName': exerciseName,
-        'exerciseDate': exerciseDate,
-        'exerciseTime': exerciseTime,
-        'exerciseIntensity': exerciseIntensity,
-        'detailedRecord': detailedRecord,
-      });
-    } catch (e) {
-      print('Error saving exercise record: $e');
-    }
-  }
-}
+import 'package:provider/provider.dart';
+import '../database/calendar_database.dart';
+import '/Sin/AuthProvider.dart';
 
 class ExerciseRecordPage extends StatefulWidget {
   final String exercise;
@@ -58,11 +34,10 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
   List<Map<String, dynamic>> _buildRecordList() {
     List<Map<String, dynamic>> records = [];
     for (int i = 0; i < _setsCount; i++) {
-      // 각 세트의 타입을 추가
       Map<String, dynamic> record = {
         'type': _detailedRecordType,
         'value': '',
-        'unit': '', // 단위를 추가
+        'unit': '',
       };
       records.add(record);
     }
@@ -161,7 +136,6 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
                       : TextInputType.number,
                   onChanged: (value) {
                     setState(() {
-                      // 입력된 값을 저장합니다.
                       if (_detailedRecords.length > i) {
                         _detailedRecords[i]['value'] = value;
                         _detailedRecords[i]['unit'] = getUnit();
@@ -181,10 +155,9 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
                 onPressed: () {
                   setState(() {
                     _setsCount++;
-                    // 새로운 세트를 위한 빈 기록을 추가합니다.
                     _detailedRecords.add({
                       'type': _detailedRecordType,
-                      'value': '', // 입력된 값이 저장될 공간을 미리 확보합니다.
+                      'value': '',
                       'unit': getUnit(),
                     });
                   });
@@ -195,7 +168,11 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                _saveExerciseRecord();
+                _saveExerciseRecord().then((saved) {
+                  if (saved) {
+                    Navigator.pop(context, true); // 데이터 저장 후 페이지 닫기
+                  }
+                });
               },
               child: Text('운동 기록 저장'),
             ),
@@ -221,38 +198,30 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
     );
   }
 
-  void _saveExerciseRecord() {
+  Future<bool> _saveExerciseRecord() async {
     final exerciseDate = widget.selectedDate;
     final exerciseTime = _exerciseTimeController.text;
     final exerciseIntensity = _selectedIntensity;
 
-    final db = FirebaseFirestore.instance;
-
-    db.collection('exercises').add({
-      'memberNumber': widget.memberNumber,
-      'exerciseName': widget.exercise,
-      'exerciseDate': exerciseDate,
-      'exerciseTime': exerciseTime,
-      'exerciseIntensity': exerciseIntensity,
-      'detailedRecord': _detailedRecords,
-    }).then((value) {
-      setState(() {
-        _exerciseTimeController.clear();
-        _selectedIntensity = '';
-        _detailedRecordType = '';
-        _setsCount = 0;
-
-        _detailedRecords =
-            _buildRecordList(); // 초기화된 _detailedRecords를 사용하여 새로운 세트를 생성합니다.
-      });
+    try {
+      await CalendarDatabase.instance.saveExerciseRecord(
+        memberNumber: widget.memberNumber,
+        exerciseName: widget.exercise,
+        exerciseDate: exerciseDate,
+        exerciseTime: exerciseTime,
+        exerciseIntensity: exerciseIntensity,
+        detailedRecord: _detailedRecords,
+      );
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('운동 기록이 저장되었습니다.'),
       ));
-    }).catchError((error) {
+      return true;
+    } catch (error) {
       print('Error saving exercise record: $error');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('운동 기록 저장 중 오류가 발생했습니다.'),
       ));
-    });
+      return false;
+    }
   }
 }

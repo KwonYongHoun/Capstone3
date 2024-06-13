@@ -11,29 +11,15 @@ class ExerciseGuidePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('운동 기구 사용 방법'),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              '운동 부위 선택',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 4,
-              children: List.generate(
-                bodyParts.length,
-                (index) => ExercisePartButton(bodyPart: bodyParts[index]),
-              ),
-            ),
-          ),
-        ],
+      body: ListView.builder(
+        itemCount: bodyParts.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+                vertical: 8.0, horizontal: 16.0), // 버튼 사이의 간격 조정
+            child: ExercisePartButton(bodyPart: bodyParts[index]),
+          );
+        },
       ),
     );
   }
@@ -47,36 +33,64 @@ class ExercisePartButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ExerciseDetailPage(bodyPart: bodyPart)),
-          );
-        },
-        style: ButtonStyle(
-          backgroundColor:
-              MaterialStateProperty.all<Color>(Colors.white), // 배경색을 하얀색으로 설정
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-              side: const BorderSide(color: Colors.green), // 테두리를 초록으로 설정
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ExerciseDetailPage(bodyPart: bodyPart)),
+        );
+      },
+      style: ButtonStyle(
+        backgroundColor:
+            MaterialStateProperty.all<Color>(Colors.white), // 배경색을 하얀색으로 설정
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            side: const BorderSide(
+                color: Color.fromARGB(255, 66, 119, 68)), // 테두리를 초록으로 설정
+          ),
+        ),
+        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+            const EdgeInsets.symmetric(vertical: 7.0)),
+        // 세로 방향으로만 여백 설정
+        minimumSize: MaterialStateProperty.all<Size>(
+            Size(double.infinity, 10)), // 버튼의 최소 크기 지정
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // 버튼과 텍스트를 오른쪽에 정렬
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+            child: Text(
+              bodyPart,
+              textAlign: TextAlign.left, // 텍스트를 왼쪽에 붙이기
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Colors.black, // 흰색으로 변경
+              ),
             ),
           ),
-          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-              const EdgeInsets.symmetric(vertical: 20.0, horizontal: 25.0)),
-        ),
-        child: Text(
-          bodyPart,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold, // 굵은체로 변경
-            color: Colors.black, // 흰색으로 변경
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        ExerciseDetailPage(bodyPart: bodyPart)),
+              );
+            },
+            child: Text(
+              '자세히',
+              style: TextStyle(
+                color: Color.fromARGB(255, 28, 158, 35), // 파란색 텍스트로 변경
+                decoration: TextDecoration.underline, // 밑줄 추가
+                decorationColor: Color.fromARGB(255, 28, 158, 35), // 밑줄 색상 지정
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -137,8 +151,9 @@ class ExerciseEquipmentCard extends StatelessWidget {
       decoration: BoxDecoration(
         // 테두리 스타일 지정
         color: Colors.white, // 배경색을 하얀색으로 설정
-        border: Border.all(color: Colors.green), // 테두리를 회색으로 설정
-        borderRadius: BorderRadius.circular(10.0), // 테두리를 둥글게 만듦
+        border:
+            Border.all(color: Color.fromARGB(255, 81, 143, 79)), // 테두리를 회색으로 설정
+        borderRadius: BorderRadius.circular(7.0), // 테두리를 둥글게 만듦
       ),
       child: ListTile(
         leading: Image.asset(equipment.imageUrl),

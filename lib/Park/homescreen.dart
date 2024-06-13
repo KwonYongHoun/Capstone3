@@ -14,17 +14,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String congestion = congestionChange;
-  Timer? _timer;
+  late Timer _timer; // late 키워드를 사용하여 _timer를 초기화하도록 변경
 
   @override
   void initState() {
     super.initState();
+    // initState에서 _startTimer를 호출하여 타이머를 시작합니다.
     _startTimer();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    // dispose 메서드에서 타이머를 취소합니다.
+    _timer.cancel();
     super.dispose();
   }
 

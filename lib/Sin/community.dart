@@ -49,7 +49,6 @@ class CommunityPage extends StatelessWidget {
           ),
           title: Row(
             children: [
-              SizedBox(width: 16),
               Text(
                 '커뮤니티',
                 style: TextStyle(fontSize: 20),

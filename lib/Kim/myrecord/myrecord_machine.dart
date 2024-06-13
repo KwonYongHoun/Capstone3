@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/Kim/myrecord/myrecord_machinerecord.dart';
+import '/health.dart';
+import '/Sin/AuthProvider.dart';
 
 class MyRecordMachinePage extends StatelessWidget {
   final String exercise;
+  final String selectedDate; // 선택한 날짜를 전달하기 위한 변수 추가
 
-  MyRecordMachinePage({required this.exercise});
+  MyRecordMachinePage({required this.exercise, required this.selectedDate});
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final memberNumber = authProvider.loggedInMemberNumber
+        .toString(); // 현재 로그인한 사용자의 memberNumber를 가져옴
+
     return Scaffold(
       appBar: AppBar(
         title: Text('$exercise 운동'), // 페이지 상단에 선택한 운동 이름을 표시
@@ -21,15 +29,17 @@ class MyRecordMachinePage extends StatelessWidget {
           crossAxisSpacing: 8, // 버튼 사이의 수평 간격
           mainAxisSpacing: 8, // 버튼 사이의 수직 간격
           padding: const EdgeInsets.all(16),
-          children: _buildMachineButtons(
-              context, exercise), // 선택한 운동에 따라 기구 버튼들을 생성하여 반환
+          children: _buildMachineButtons(context, exercise, memberNumber,
+              selectedDate), // 선택한 운동에 따라 기구 버튼들을 생성하여 반환
         ),
       ),
     );
   }
 
   // 선택한 운동에 따라 해당하는 기구 버튼들을 생성하여 반환하는 함수
-  List<Widget> _buildMachineButtons(BuildContext context, String exercise) {
+  List<Widget> _buildMachineButtons(BuildContext context, String exercise,
+      String memberNumber, String selectedDate) {
+    // 선택한 날짜를 전달받도록 수정
     List<String> machines = [];
 
     // 선택한 운동에 따라 해당하는 기구들의 목록을 설정
@@ -144,26 +154,33 @@ class MyRecordMachinePage extends StatelessWidget {
           '덤벨 버피',
           '덤벨 쓰러스터'
         ];
+        break;
       default:
         break;
     }
-
-    // 각 기구에 대한 버튼 위젯들을 생성하여 리스트로 반환
+// 각 기구에 대한 버튼 위젯들을 생성하여 리스트로 반환
     return machines
-        .map((machine) => _buildMachineButton(context, machine))
+        .map((machine) => _buildMachineButton(
+            context, machine, memberNumber, selectedDate)) // 선택한 날짜도 전달하도록 수정
         .toList();
   }
 
-  // 각 운동 기구 버튼을 생성하는 함수
-  Widget _buildMachineButton(BuildContext context, String text) {
+// 각 운동 기구 버튼을 생성하는 함수
+  Widget _buildMachineButton(BuildContext context, String text,
+      String memberNumber, String selectedDate) {
+    // 선택한 날짜를 전달받도록 수정
     return ElevatedButton(
       onPressed: () {
-        // 운동 기구 버튼을 눌렀을 때 처리할 작업 작성
+// 운동 기구 버튼을 눌렀을 때 처리할 작업 작성
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => MyRecordMachineRecord(
-                  exercise: text)), // 해당 기구에 대한 기록 페이지로 이동
+            builder: (context) => ExerciseRecordPage(
+              exercise: text,
+              memberNumber: memberNumber,
+              selectedDate: selectedDate, // 선택한 날짜를 전달
+            ),
+          ),
         );
       },
       style: ButtonStyle(

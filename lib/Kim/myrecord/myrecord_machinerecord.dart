@@ -105,9 +105,9 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildIntensityButton('가볍게'),
-                _buildIntensityButton('적당히'),
-                _buildIntensityButton('격하게'),
+                _buildIntensityButton('가볍게', Colors.black),
+                _buildIntensityButton('적당히', Colors.black),
+                _buildIntensityButton('격하게', Colors.black),
               ],
             ),
             SizedBox(height: 16),
@@ -137,6 +137,9 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
                   _detailedRecords = _buildRecordList();
                 });
               },
+              color: const Color.fromARGB(255, 255, 174, 174), // 기본 텍스트 색상
+              selectedColor: Color.fromARGB(255, 255, 255, 255), // 선택된 텍스트 색상
+              fillColor: Color.fromARGB(255, 255, 174, 174), // 선택된 버튼 배경 색상
             ),
             SizedBox(height: 16),
             if (_detailedRecordType.isNotEmpty) ...[
@@ -168,30 +171,62 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
                 SizedBox(height: 8), // Add space between each set
               ],
               SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _setsCount++;
-                    _detailedRecords.add({
-                      'type': _detailedRecordType,
-                      'value': '',
-                      'unit': getUnit(),
-                    });
-                  });
-                },
-                child: Text('세트 추가하기'),
+              Align(
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: 150, // 버튼의 너비 조정
+                  height: 30, // 버튼의 높이 조정
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _setsCount++;
+                        _detailedRecords.add({
+                          'type': _detailedRecordType,
+                          'value': '',
+                          'unit': getUnit(),
+                        });
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          Color.fromARGB(255, 255, 174, 174), // 버튼 색상 지정
+                    ),
+                    child: Text(
+                      '세트 추가하기',
+                      style: TextStyle(color: Colors.white), // 버튼 텍스트 색상 지정
+                    ),
+                  ),
+                ),
               ),
             ],
             SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                _saveExerciseRecord().then((saved) {
-                  if (saved) {
-                    Navigator.pop(context, true); // 데이터 저장 후 페이지 닫기
-                  }
-                });
-              },
-              child: Text('운동 기록 저장'),
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 200, // 버튼의 너비 조정
+                height: 50, // 버튼의 높이 조정
+                child: ElevatedButton(
+                  onPressed: () {
+                    _saveExerciseRecord().then((saved) {
+                      if (saved) {
+                        Navigator.pop(context, true); // 데이터 저장 후 페이지 닫기
+                      }
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Color.fromARGB(255, 255, 193, 59), // 버튼 색상 지정
+                  ),
+                  child: Text(
+                    '운동 기록 저장',
+                    style: TextStyle(
+                      color: Colors.white, // 버튼 텍스트 색상 지정
+                      fontSize: 15, // 텍스트 크기 조정
+                      fontWeight: FontWeight.bold, // 볼드체 설정
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -199,7 +234,7 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
     );
   }
 
-  Widget _buildIntensityButton(String intensity) {
+  Widget _buildIntensityButton(String intensity, Color textColor) {
     return ElevatedButton(
       onPressed: () {
         setState(() {
@@ -208,10 +243,15 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
       },
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
-          return _selectedIntensity == intensity ? Colors.blue : Colors.white;
+          return _selectedIntensity == intensity
+              ? Color.fromARGB(255, 255, 174, 174)
+              : Colors.white;
         }),
       ),
-      child: Text(intensity),
+      child: Text(
+        intensity,
+        style: TextStyle(color: textColor), // 버튼 텍스트 색상 지정
+      ),
     );
   }
 

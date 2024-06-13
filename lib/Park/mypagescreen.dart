@@ -172,7 +172,7 @@ class _MyPageScreenState extends State<MypageScreen> {
                 ListTile(
                   contentPadding: EdgeInsets.fromLTRB(30, 0, 30, 0), // 패딩 값 설정
                   leading: Icon(Icons.card_membership), // 회원권 관리 아이콘
-                  title: Text('회원권 관리'),
+                  title: Text('멤버십 관리'),
                   trailing: Icon(Icons.arrow_forward_ios, size: 17),
                   onTap: () {
                     Navigator.of(context).push(

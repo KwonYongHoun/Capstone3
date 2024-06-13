@@ -68,9 +68,25 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '운동 시간',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: '운동 시간',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                  ),
+                  TextSpan(
+                    text: ' (ex. 10분 / 10m)',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 8),
             TextFormField(
@@ -149,6 +165,7 @@ class _ExerciseRecordPageState extends State<ExerciseRecordPage> {
                     });
                   },
                 ),
+                SizedBox(height: 8), // Add space between each set
               ],
               SizedBox(height: 16),
               ElevatedButton(

@@ -109,10 +109,13 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
   }
 
   void _selectSuspendPeriod() async {
+    final DateTime now = DateTime.now();
+    final DateTime maxDate = now.add(Duration(days: 14)); // 현재 날짜로부터 최대 2주
+
     final DateTimeRange? picked = await showDateRangePicker(
       context: context,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
+      firstDate: now,
+      lastDate: maxDate,
     );
 
     if (picked != null) {
@@ -232,8 +235,53 @@ class _MembershipManagementPageState extends State<MembershipManagementPage> {
             TextButton(
               child: Text('확인'),
               onPressed: () {
-                _confirmSuspend();
-                Navigator.of(context).pop();
+                if (suspendStartDate == null ||
+                    suspendEndDate == null ||
+                    _suspendReasonController.text.isEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('오류'),
+                        content: Text('정지 기간과 정지 사유를 모두 입력해주세요.'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('확인'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('정말 확인하시겠습니까?'),
+                        content: Text('취소할 수 없습니다.'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('취소'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text('확인'),
+                            onPressed: () {
+                              _confirmSuspend();
+                              Navigator.of(context).pop(); // 두 번째 다이얼로그 닫기
+                              Navigator.of(context).pop(); // 첫 번째 다이얼로그 닫기
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
               },
             ),
           ],

@@ -136,7 +136,7 @@ class _MyRecordPageState extends State<MyRecordPage> with RouteAware {
                     style: const TextStyle(
                       fontSize: 27,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      color: Color.fromARGB(255, 26, 175, 7),
                     ),
                     textAlign: TextAlign.center,
                   ),

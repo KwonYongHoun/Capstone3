@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/Kim/myrecord/myrecord_page.dart';
-import '/Kim/myrecord/myrecord_statistic.dart';
 import '../database/calendar_database.dart'; // 데이터베이스 파일 임포트
 import '/Sin/AuthProvider.dart'; // 로그인 정보를 가져오는 provider 파일
 

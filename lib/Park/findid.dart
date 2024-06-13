@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
+import 'loginpage.dart';
 
 class FindId extends StatefulWidget {
   @override
@@ -33,6 +34,9 @@ class _FindIdState extends State<FindId> {
   void _sendVerificationCode() async {
     String name = _nameController.text;
     String phoneNumber = _phoneController.text;
+
+    // 전화번호를 +82로 시작하게 변경
+    String formattedPhoneNumber = '+82' + phoneNumber.substring(1);
 
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('members')
@@ -66,7 +70,7 @@ class _FindIdState extends State<FindId> {
       _startTimer();
 
       await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '+82' + phoneNumber,
+        phoneNumber: formattedPhoneNumber,
         timeout: Duration(seconds: 60),
         verificationCompleted: (PhoneAuthCredential credential) async {
           await FirebaseAuth.instance.signInWithCredential(credential);
@@ -118,7 +122,9 @@ class _FindIdState extends State<FindId> {
 
       try {
         await FirebaseAuth.instance.signInWithCredential(credential);
-        // 인증 성공 처리
+        // 인증 성공 시 회원 번호 가져오기
+        String memberId = await _getMemberId();
+        _showMemberId(memberId);
       } catch (e) {
         showDialog(
           context: context,
@@ -139,6 +145,46 @@ class _FindIdState extends State<FindId> {
         );
       }
     }
+  }
+
+  Future<String> _getMemberId() async {
+    String name = _nameController.text;
+    String phoneNumber = _phoneController.text;
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('members')
+        .where('name', isEqualTo: name)
+        .where('phoneNumber', isEqualTo: phoneNumber)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      return snapshot.docs.first['memberNumber'].toString();
+    } else {
+      return '알 수 없음';
+    }
+  }
+
+  void _showMemberId(String memberId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('인증 성공'),
+          content: Text('회원번호는 $memberId 입니다.'), // 실제 회원 번호로 변경
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                ); // 로그인 페이지로 이동
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -285,14 +331,14 @@ class _FindIdState extends State<FindId> {
                             ),
                             keyboardType: TextInputType.number,
                             onChanged: (value) {
-                              if (value.length <= 4) {
+                              if (value.length <= 6) {
                                 setState(() {
-                                  _isVerificationCodeValid = value.length == 4;
+                                  _isVerificationCodeValid = value.length == 6;
                                 });
                               } else {
                                 setState(() {
                                   _verificationCodeController.text =
-                                      value.substring(0, 4);
+                                      value.substring(0, 6);
                                   _verificationCodeController.selection =
                                       TextSelection.fromPosition(
                                     TextPosition(
@@ -305,8 +351,8 @@ class _FindIdState extends State<FindId> {
                             },
                           ),
                           Positioned(
-                            right: 10,
-                            top: 15,
+                            right: 30,
+                            top: 22,
                             child: Text(
                               _formatTime(_start),
                               style: TextStyle(
@@ -321,7 +367,7 @@ class _FindIdState extends State<FindId> {
                   ),
                 if (!_isCodeValid &&
                     _verificationCodeController.text.isNotEmpty &&
-                    _verificationCodeController.text.length < 4)
+                    _verificationCodeController.text.length < 6)
                   Padding(
                     padding: EdgeInsets.fromLTRB(14.0, 10.0, 10.0, 10.0),
                     child: Text(

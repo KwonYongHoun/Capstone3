@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
+import 'loginpage.dart';
 
 class FindPassword extends StatefulWidget {
   @override
@@ -7,30 +11,187 @@ class FindPassword extends StatefulWidget {
 
 class _FindPasswordState extends State<FindPassword> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _idController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _IdController = TextEditingController();
   TextEditingController _verificationCodeController = TextEditingController();
   bool _isVerificationCodeValid = false;
-  bool _isPhoneValid = false; // 휴대폰 번호 유효성 검사 상태
-  bool _isVerificationCodeSent = false; // 인증번호 보내기 버튼이 눌렸는지 확인하는 상태
+  bool _isPhoneValid = false;
+  bool _isVerificationCodeSent = false;
   bool _isCodeValid = false;
   bool _isIdValid = false;
+
+  Timer? _timer;
+  int _start = 180;
+  String _verificationId = '';
 
   @override
   void dispose() {
     _nameController.dispose();
+    _idController.dispose();
     _phoneController.dispose();
-    _IdController.dispose();
     _verificationCodeController.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
-  void _sendVerificationCode() {
-    print(
-        '이름: ${_nameController.text}, 전화번호: ${_phoneController.text}, 인증번호: ${_verificationCodeController.text}');
-    setState(() {
-      _isVerificationCodeSent = true;
+  void _sendVerificationCode() async {
+    String name = _nameController.text;
+    String phoneNumber = _phoneController.text;
+    int memberNumber = int.tryParse(_idController.text) ?? 0;
+
+    // 전화번호를 +82로 시작하게 변경
+    String formattedPhoneNumber = '+82' + phoneNumber.substring(1);
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('members')
+        .where('name', isEqualTo: name)
+        .where('memberNumber', isEqualTo: memberNumber)
+        .where('phoneNumber', isEqualTo: phoneNumber)
+        .get();
+
+    if (snapshot.docs.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('오류'),
+            content: Text('이름과 회원번호 및 전화번호를 다시 한 번 확인 해주세요.'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('확인'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      setState(() {
+        _isVerificationCodeSent = true;
+        _start = 180;
+      });
+      _startTimer();
+
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: formattedPhoneNumber,
+        timeout: Duration(seconds: 60),
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          await FirebaseAuth.instance.signInWithCredential(credential);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          print('Failed to verify phone number: ${e.message}');
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          setState(() {
+            _verificationId = verificationId;
+          });
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          setState(() {
+            _verificationId = verificationId;
+          });
+        },
+      );
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_start == 0) {
+        setState(() {
+          timer.cancel();
+        });
+      } else {
+        setState(() {
+          _start--;
+        });
+      }
     });
+  }
+
+  String _formatTime(int seconds) {
+    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
+    final secs = (seconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$secs';
+  }
+
+  void _verifyCode() async {
+    String smsCode = _verificationCodeController.text.trim();
+
+    if (_verificationId.isNotEmpty && smsCode.isNotEmpty) {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+          verificationId: _verificationId, smsCode: smsCode);
+
+      try {
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        // 인증 성공 시 비밀 번호 가져오기
+        String password = await _getMemberPassword();
+        _showMemberPassword(password);
+      } catch (e) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('오류'),
+              content: Text('인증 번호가 잘못되었습니다.'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('확인'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+  }
+
+  Future<String> _getMemberPassword() async {
+    String name = _nameController.text;
+    String phoneNumber = _phoneController.text;
+    int memberNumber = int.tryParse(_idController.text) ?? 0;
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('members')
+        .where('name', isEqualTo: name)
+        .where('memberNumber', isEqualTo: memberNumber)
+        .where('phoneNumber', isEqualTo: phoneNumber)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      return snapshot.docs.first['password'].toString();
+    } else {
+      return '알 수 없음';
+    }
+  }
+
+  void _showMemberPassword(String password) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('인증 성공'),
+          content: Text('비밀번호는 $password 입니다.'), // 실제 비밀번호로 변경
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                ); // 로그인 페이지로 이동
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -38,7 +199,7 @@ class _FindPasswordState extends State<FindPassword> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('비밀번호 찾기'),
+        title: Text('회원번호 찾기'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,9 +229,7 @@ class _FindPasswordState extends State<FindPassword> {
                   ),
                   onChanged: (value) {
                     setState(() {
-                      _isIdValid == value.isNotEmpty &&
-                          _nameController.text.isNotEmpty &&
-                          _phoneController.text.isNotEmpty &&
+                      _isPhoneValid = value.isNotEmpty &&
                           _phoneController.text.length == 11;
                     });
                   },
@@ -84,7 +243,7 @@ class _FindPasswordState extends State<FindPassword> {
                   height: 5.0,
                 ),
                 TextField(
-                  controller: _IdController,
+                  controller: _idController,
                   decoration: InputDecoration(
                     fillColor: Color.fromARGB(255, 248, 245, 245),
                     filled: true,
@@ -94,12 +253,6 @@ class _FindPasswordState extends State<FindPassword> {
                     hintText: '회원번호를 입력해 주세요.',
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      _isPhoneValid = value.isNotEmpty &&
-                          _phoneController.text.length == 11;
-                    });
-                  },
                 ),
                 SizedBox(height: 10),
                 Text('휴대폰 번호',
@@ -131,7 +284,6 @@ class _FindPasswordState extends State<FindPassword> {
                               _isPhoneValid = value.length == 11;
                             });
                           } else {
-                            // 사용자가 4자리를 초과하여 입력하는 경우, 입력값을 4자리로 제한
                             setState(() {
                               _phoneController.text = value.substring(0, 11);
                               _phoneController.selection =
@@ -146,24 +298,26 @@ class _FindPasswordState extends State<FindPassword> {
                       ),
                     ),
                     SizedBox(width: 13),
-                    ElevatedButton(
-                      onPressed: _isPhoneValid ? _sendVerificationCode : null,
-                      child: Text(
-                        _isVerificationCodeSent ? '재전송' : '인증번호 보내기',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green[300]),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.green,
-                        backgroundColor: Colors.white,
-                        side: BorderSide(
-                            color: const Color.fromARGB(255, 160, 219, 162),
-                            width: 1),
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13.0),
+                    Container(
+                      width: 120,
+                      child: ElevatedButton(
+                        onPressed: _isPhoneValid ? _sendVerificationCode : null,
+                        child: Text(
+                          _isVerificationCodeSent ? '재전송' : '인증번호 보내기',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.green),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.green,
+                          backgroundColor: Colors.white,
+                          side: BorderSide(
+                              color: const Color.fromARGB(255, 160, 219, 162),
+                              width: 1),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13.0),
+                          ),
                         ),
                       ),
                     ),
@@ -189,44 +343,58 @@ class _FindPasswordState extends State<FindPassword> {
                       SizedBox(
                         height: 10.0,
                       ),
-                      TextField(
-                        controller: _verificationCodeController,
-                        decoration: InputDecoration(
-                          fillColor: Color.fromARGB(255, 248, 245, 245),
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(13.0),
+                      Stack(
+                        children: [
+                          TextField(
+                            controller: _verificationCodeController,
+                            decoration: InputDecoration(
+                              fillColor: Color.fromARGB(255, 248, 245, 245),
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(13.0),
+                              ),
+                              hintText: '인증번호를 입력해 주세요.',
+                              hintStyle: TextStyle(color: Colors.grey),
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              if (value.length <= 6) {
+                                setState(() {
+                                  _isVerificationCodeValid = value.length == 6;
+                                });
+                              } else {
+                                setState(() {
+                                  _verificationCodeController.text =
+                                      value.substring(0, 6);
+                                  _verificationCodeController.selection =
+                                      TextSelection.fromPosition(
+                                    TextPosition(
+                                        offset: _verificationCodeController
+                                            .text.length),
+                                  );
+                                  _isVerificationCodeValid = true;
+                                });
+                              }
+                            },
                           ),
-                          hintText: '인증번호를 입력해 주세요.',
-                          hintStyle: TextStyle(color: Colors.grey),
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          if (value.length <= 4) {
-                            setState(() {
-                              _isVerificationCodeValid = value.length == 4;
-                            });
-                          } else {
-                            // 사용자가 4자리를 초과하여 입력하는 경우, 입력값을 4자리로 제한
-                            setState(() {
-                              _verificationCodeController.text =
-                                  value.substring(0, 4);
-                              _verificationCodeController.selection =
-                                  TextSelection.fromPosition(
-                                TextPosition(
-                                    offset: _verificationCodeController
-                                        .text.length),
-                              );
-                              _isVerificationCodeValid = true;
-                            });
-                          }
-                        },
+                          Positioned(
+                            right: 30,
+                            top: 22,
+                            child: Text(
+                              _formatTime(_start),
+                              style: TextStyle(
+                                color: _start == 0 ? Colors.red : Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 if (!_isCodeValid &&
                     _verificationCodeController.text.isNotEmpty &&
-                    _verificationCodeController.text.length < 4)
+                    _verificationCodeController.text.length < 6)
                   Padding(
                     padding: EdgeInsets.fromLTRB(14.0, 10.0, 10.0, 10.0),
                     child: Text(
@@ -243,10 +411,8 @@ class _FindPasswordState extends State<FindPassword> {
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: ElevatedButton(
-                  onPressed: _isVerificationCodeValid
-                      ? () {
-                          // 인증하기 로직 추가
-                        }
+                  onPressed: _isVerificationCodeValid && _start > 0
+                      ? _verifyCode
                       : null,
                   child: Text('인증하기',
                       style: TextStyle(

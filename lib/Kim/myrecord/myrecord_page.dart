@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '/Kim/myrecord/myrecord_page.dart';
-import '/Kim/myrecord/myrecord_machine.dart';
-import '../database/calendar_database.dart'; // 데이터베이스 파일 임포트
+import 'package:table_calendar/table_calendar.dart';
+import 'dart:async';
+import '../database/calendar_database.dart';
 import '/Sin/AuthProvider.dart';
+import '/Kim/myrecord/myrecord_machine.dart';
+import '/Kim/myrecord/myrecord_page.dart';
+import '/main.dart'; // RouteObserver가 있는 파일을 임포트
 
 class MyRecordPage extends StatefulWidget {
   final DateTime selectedDate;
@@ -17,10 +18,10 @@ class MyRecordPage extends StatefulWidget {
   _MyRecordPageState createState() => _MyRecordPageState();
 }
 
-class _MyRecordPageState extends State<MyRecordPage> {
+class _MyRecordPageState extends State<MyRecordPage> with RouteAware {
   late TextEditingController _startTimeController;
   late TextEditingController _endTimeController;
-  int _exerciseDuration = 0; // 해당 일자에 운동한 시간
+  int _exerciseDuration = 0;
   late Timer _timer;
   List<Map<String, dynamic>> _exerciseDetails = [];
 
@@ -29,27 +30,29 @@ class _MyRecordPageState extends State<MyRecordPage> {
     super.initState();
     _startTimeController = TextEditingController();
     _endTimeController = TextEditingController();
-    _loadExerciseDuration(); // 해당 일자에 운동한 시간 로드
-    _loadExerciseDetails(); // 운동 상세 기록 로드
+    _loadExerciseDuration();
+    _loadExerciseDetails();
     _timer = Timer(Duration.zero, () {});
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadExerciseDetails(); // 화면에 표시될 때마다 호출하여 상세 운동 기록을 갱신합니다.
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   routeObserver.subscribe(this, ModalRoute.of(context)!);
+  // }
 
   @override
   void dispose() {
     _startTimeController.dispose();
     _endTimeController.dispose();
+    routeObserver.unsubscribe(this);
     super.dispose();
   }
 
-  String _formatDuration(int duration) {
-    Duration dur = Duration(seconds: duration);
-    return '${dur.inHours.toString().padLeft(2, '0')}:${(dur.inMinutes % 60).toString().padLeft(2, '0')}:${(dur.inSeconds % 60).toString().padLeft(2, '0')}';
+  @override
+  void didPopNext() {
+    _loadExerciseDuration();
+    _loadExerciseDetails();
   }
 
   Future<void> _loadExerciseDuration() async {
@@ -67,7 +70,7 @@ class _MyRecordPageState extends State<MyRecordPage> {
         });
       } else {
         setState(() {
-          _exerciseDuration = 0; // 해당 일자에 운동한 시간이 없으면 0으로 설정
+          _exerciseDuration = 0;
         });
       }
     }
@@ -95,6 +98,11 @@ class _MyRecordPageState extends State<MyRecordPage> {
     }
   }
 
+  String _formatDuration(int duration) {
+    Duration dur = Duration(seconds: duration);
+    return '${dur.inHours.toString().padLeft(2, '0')}:${(dur.inMinutes % 60).toString().padLeft(2, '0')}:${(dur.inSeconds % 60).toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,37 +113,28 @@ class _MyRecordPageState extends State<MyRecordPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 16),
-            const Divider(), // 이 부분이 추가된 선입니다.
-            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 10),
             Text(
               '${widget.selectedDate.month}월 ${widget.selectedDate.day}일',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            const SizedBox(height: 16),
             Container(
               width: 100,
               padding: EdgeInsets.symmetric(vertical: 6),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.blue,
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
               child: Column(
                 children: [
                   Text(
                     '오늘의 운동 시간 ',
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 20),
                     textAlign: TextAlign.center,
                   ),
                   Text(
                     '${_formatDuration(_exerciseDuration)}',
                     style: const TextStyle(
-                      fontSize: 24,
+                      fontSize: 27,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue,
                     ),
@@ -145,11 +144,11 @@ class _MyRecordPageState extends State<MyRecordPage> {
               ),
             ),
             const SizedBox(height: 12),
-            const Divider(), // 추가된 선입니다.
+            const Divider(),
             const SizedBox(height: 16),
             const SizedBox(height: 5),
             const Text(
-              '운동 부위\n',
+              '추가할 운동 부위\n',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
@@ -172,7 +171,7 @@ class _MyRecordPageState extends State<MyRecordPage> {
               ],
             ),
             const SizedBox(height: 16),
-            const Divider(), // 추가된 선입니다.
+            const Divider(),
             const SizedBox(height: 16),
             Text(
               '저장된 운동 기록',
@@ -191,8 +190,8 @@ class _MyRecordPageState extends State<MyRecordPage> {
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => MyRecordMachinePage(
@@ -202,6 +201,7 @@ class _MyRecordPageState extends State<MyRecordPage> {
               ),
             ),
           );
+          _loadExerciseDetails(); // 돌아왔을 때 새로고침
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,

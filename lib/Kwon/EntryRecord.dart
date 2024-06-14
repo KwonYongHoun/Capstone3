@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // 날짜 포맷을 위해 추가
+import 'package:intl/intl.dart';
 
 class EntryLogsPage extends StatefulWidget {
   @override
@@ -9,14 +9,14 @@ class EntryLogsPage extends StatefulWidget {
 
 class _EntryLogsPageState extends State<EntryLogsPage> {
   bool showMultipleEntries = false;
-  DateTime selectedDate = DateTime.now(); // 선택된 날짜 저장
+  DateTime selectedDate = DateTime.now();
   List<QueryDocumentSnapshot> multipleEntriesDocs = [];
 
   Future<void> selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime(2020), // 원하는 날짜 범위 설정
+      firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
     if (picked != null && picked != selectedDate) {
@@ -64,6 +64,63 @@ class _EntryLogsPageState extends State<EntryLogsPage> {
     });
   }
 
+  Future<void> deleteLog(String docId) async {
+    await FirebaseFirestore.instance.collection('entryLogs').doc(docId).delete();
+  }
+
+  List<Widget> buildLogList(List<QueryDocumentSnapshot> docs) {
+    Map<String, List<Widget>> dateGroupedLogs = {};
+
+    for (var doc in docs) {
+      var data = doc.data() as Map<String, dynamic>;
+      var timestamp = data['timestamp'] as Timestamp?;
+      var date = timestamp?.toDate();
+      var formattedDate = DateFormat('yyyy-MM-dd').format(date!);
+
+      if (!dateGroupedLogs.containsKey(formattedDate)) {
+        dateGroupedLogs[formattedDate] = [];
+      }
+
+      dateGroupedLogs[formattedDate]!.add(
+        Card(
+          margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+          child: ListTile(
+            title: Text('회원번호: ${data['memberId']}'),
+            subtitle: Text('입장시간: ${date.toString()}'),
+            trailing: IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () {
+                deleteLog(doc.id);
+              },
+            ),
+          ),
+        ),
+      );
+    }
+
+    List<Widget> logList = [];
+    dateGroupedLogs.forEach((date, logs) {
+      logList.add(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              child: Text(
+                date,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center, // 날짜 가운데 정렬
+              ),
+            ),
+            ...logs,
+          ],
+        ),
+      );
+    });
+
+    return logList;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,33 +157,12 @@ class _EntryLogsPageState extends State<EntryLogsPage> {
             return Center(child: Text('No entries found.'));
           }
 
-          if (showMultipleEntries) {
-            if (multipleEntriesDocs.isEmpty) {
-              return Center(child: Text('선택한 날짜에 두 번 이상 입장한 회원이 없습니다.'));
-            }
-            return ListView(
-              children: multipleEntriesDocs.map((doc) {
-                var data = doc.data() as Map<String, dynamic>;
-                var timestamp = data['timestamp'] as Timestamp?;
-                var date = timestamp != null ? timestamp.toDate() : null;
-                return ListTile(
-                  title: Text('회원번호: ${data['memberId']}'),
-                  subtitle: Text('입장시간: ${date?.toString() ?? 'N/A'}'),
-                );
-              }).toList(),
-            );
-          }
+          List<QueryDocumentSnapshot> docs = showMultipleEntries
+              ? multipleEntriesDocs
+              : snapshot.data!.docs;
 
           return ListView(
-            children: snapshot.data!.docs.map((doc) {
-              var data = doc.data() as Map<String, dynamic>;
-              var timestamp = data['timestamp'] as Timestamp?;
-              var date = timestamp != null ? timestamp.toDate() : null;
-              return ListTile(
-                title: Text('회원번호: ${data['memberId']}'),
-                subtitle: Text('입장시간: ${date?.toString() ?? 'N/A'}'),
-              );
-            }).toList(),
+            children: buildLogList(docs),
           );
         },
       ),

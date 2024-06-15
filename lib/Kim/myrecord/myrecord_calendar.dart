@@ -298,7 +298,7 @@ class _MyrecordCalendarPageState extends State<MyrecordCalendarPage> {
               ),
             ),
             child: const Text(
-              '나의 운동 기록 추가하기',
+              '나의 운동 기록',
               style: TextStyle(
                 color: Colors.green,
                 fontWeight: FontWeight.bold,

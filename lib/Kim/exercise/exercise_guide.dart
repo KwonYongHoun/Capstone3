@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '/Kim/exercise/exercise_explain.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'exercise_explain.dart';
 
 class ExerciseGuidePage extends StatelessWidget {
   const ExerciseGuidePage({Key? key}) : super(key: key);
@@ -139,7 +139,7 @@ class ExerciseEquipmentCard extends StatelessWidget {
             exerciseName: equipment.name,
             description: equipment.description,
             imageUrl: equipment.imageUrl,
-            url: equipment.url,
+            url: equipment.url.toString(),
           ),
         ),
       );
@@ -176,14 +176,14 @@ class ExerciseEquipment {
   final String name;
   final String description;
   final String imageUrl;
-  final String url;
+  final Uri url;
 
   ExerciseEquipment({
     required this.name,
     required this.description,
     required this.imageUrl,
-    required this.url,
-  });
+    required String url,
+  }) : url = Uri.parse(url);
 }
 
 final List<String> bodyParts = [

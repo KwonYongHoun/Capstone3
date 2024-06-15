@@ -1,11 +1,11 @@
-import 'dart:async'; // Timer 사용을 위해 추가
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:provider/provider.dart';
-import 'loginpage.dart'; // enteredId 변수가 여기서 선언된 것으로 가정
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Kwon/Congestion.dart';
-import '../Sin/AuthProvider.dart'; // AuthProvider 임포트
-import '../health.dart'; // DatabaseHelper 클래스 임포트
+import '../Sin/AuthProvider.dart';
+import '../health.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -14,18 +14,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String congestion = congestionChange;
-  late Timer _timer; // late 키워드를 사용하여 _timer를 초기화하도록 변경
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    // initState에서 _startTimer를 호출하여 타이머를 시작합니다.
     _startTimer();
   }
 
   @override
   void dispose() {
-    // dispose 메서드에서 타이머를 취소합니다.
     _timer.cancel();
     super.dispose();
   }
@@ -43,10 +41,75 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _checkAndLogEntry(String memberId) async {
+    DateTime now = DateTime.now();
+    DateTime startOfDay = DateTime(now.year, now.month, now.day);
+    DateTime endOfDay = startOfDay.add(Duration(days: 1));
+
+    var snapshot = await FirebaseFirestore.instance
+        .collection('entryLogs')
+        .where('memberId', isEqualTo: memberId)
+        .where('timestamp', isGreaterThanOrEqualTo: startOfDay)
+        .where('timestamp', isLessThanOrEqualTo: endOfDay)
+        .get();
+
+    if (snapshot.docs.length >= 1) {
+      // 이미 입장 기록이 있는 경우 경고창 띄우기
+      _showWarningDialog();
+    } else {
+      // 입장 기록 추가
+      await FirebaseFirestore.instance.collection('entryLogs').add({
+        'memberId': memberId,
+        'timestamp': now,
+      });
+      _showEntrySuccessDialog();
+    }
+  }
+
+  void _showWarningDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('경고'),
+          content: Text('하루에 1회만 입장이 가능합니다.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEntrySuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('입장 성공'),
+          content: Text('입장이 성공적으로 기록되었습니다.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loggedInMember = Provider.of<AuthProvider>(context).loggedInMember;
-    final Id = loggedInMember?.memberNumber.toString() ?? '';
+    final memberId = loggedInMember?.memberNumber.toString() ?? '';
 
     return Center(
       child: Column(
@@ -75,15 +138,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     border: Border.all(color: Colors.black, width: 2),
                   ),
                   child: Center(
-                    child: QrImageView(
-                      data: Id,
-                      version: QrVersions.auto,
-                      size: 200.0,
+                    child: GestureDetector(
+                      onTap: () => _checkAndLogEntry(memberId),
+                      child: QrImageView(
+                        data: memberId,
+                        version: QrVersions.auto,
+                        size: 200.0,
+                      ),
                     ),
                   ),
                 ),
                 Text(
-                  '회원번호:$Id',
+                  '회원번호: $memberId',
                   style: TextStyle(
                     fontSize: 18,
                     decoration: TextDecoration.underline,
@@ -153,8 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
         color6 = color7 = Colors.red;
         break;
       default:
-        color1 =
-            color2 = color3 = color4 = color5 = color6 = color7 = Colors.grey;
+        color1 = color2 = color3 = color4 = color5 = color6 = color7 = Colors.grey;
         break;
     }
 

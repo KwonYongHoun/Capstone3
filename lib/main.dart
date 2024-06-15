@@ -7,6 +7,7 @@ import 'Park/myhomepage.dart';
 import 'Sin/WPage.dart';
 import 'Park/findid.dart';
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      navigatorObservers: [routeObserver],
       home: LoginPage(),
       routes: {
         '/login': (context) => LoginPage(),

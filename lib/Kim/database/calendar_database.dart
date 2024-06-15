@@ -1,49 +1,88 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CalendarDatabase {
-  // Firebase Firestore 인스턴스 생성
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const String _recordsCollectionName = 'records';
+  static const String _exercisesCollectionName = 'exercises';
 
-  // Firestore에 저장된 레코드의 컬렉션 이름
-  static const String _collectionName = 'records';
-
-  // CalendarDatabase의 싱글톤 인스턴스
   static final CalendarDatabase instance = CalendarDatabase._init();
-
-  // 내부 생성자
   CalendarDatabase._init();
 
-  // Firestore의 컬렉션 참조를 가져오는 메서드
   CollectionReference<Map<String, dynamic>> get _recordsCollection {
-    return _firestore.collection(_collectionName);
+    return _firestore.collection(_recordsCollectionName);
   }
 
-  // Firestore에 레코드 추가하는 메서드
+  CollectionReference<Map<String, dynamic>> get _exercisesCollection {
+    return _firestore.collection(_exercisesCollectionName);
+  }
+
   Future<void> insertRecord(
-      String date, int duration, String startTime, String endTime) async {
-    await _recordsCollection.add({
+      String memberNumber, String date, int duration) async {
+    String docId = '$memberNumber$date';
+    await _recordsCollection.doc(docId).set({
+      'memberNumber': memberNumber,
       'date': date,
       'duration': duration,
-      'startTime': startTime,
-      'endTime': endTime,
     });
   }
 
-  // 특정 날짜의 레코드를 가져오는 메서드
-  Future<Map<String, dynamic>?> getRecordByDate(String date) async {
-    final querySnapshot =
-        await _recordsCollection.where('date', isEqualTo: date).limit(1).get();
+  Future<Map<String, dynamic>?> getRecordByDate(
+      String memberNumber, String date) async {
+    String docId = '$memberNumber$date';
+    final docSnapshot = await _recordsCollection.doc(docId).get();
 
-    if (querySnapshot.docs.isNotEmpty) {
-      return querySnapshot.docs.first.data();
+    if (docSnapshot.exists) {
+      return docSnapshot.data();
     } else {
       return null;
     }
   }
 
-  // 모든 레코드를 가져오는 메서드
-  Future<List<Map<String, dynamic>>> getAllRecords() async {
-    final querySnapshot = await _recordsCollection.get();
+  Future<List<Map<String, dynamic>>> getAllRecords(String memberNumber) async {
+    final querySnapshot = await _recordsCollection
+        .where('memberNumber', isEqualTo: memberNumber)
+        .get();
     return querySnapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  Future<void> deleteRecord(String memberNumber, String date) async {
+    String docId = '$memberNumber$date';
+    await _recordsCollection.doc(docId).delete();
+  }
+
+  Future<void> saveExerciseRecord({
+    required String memberNumber,
+    required String exerciseName,
+    required String exerciseDate,
+    required String exerciseTime,
+    required String exerciseIntensity,
+    required List<Map<String, dynamic>> detailedRecord,
+  }) async {
+    try {
+      await _exercisesCollection.add({
+        'memberNumber': memberNumber,
+        'exerciseName': exerciseName,
+        'exerciseDate': exerciseDate,
+        'exerciseTime': exerciseTime,
+        'exerciseIntensity': exerciseIntensity,
+        'detailedRecord': detailedRecord,
+      });
+    } catch (e) {
+      print('Error saving exercise record: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>?> getExerciseDetailsByDate(
+      String memberNumber, String date) async {
+    final querySnapshot = await _exercisesCollection
+        .where('memberNumber', isEqualTo: memberNumber)
+        .where('exerciseDate', isEqualTo: date)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    } else {
+      return null;
+    }
   }
 }

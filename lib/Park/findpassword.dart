@@ -50,23 +50,7 @@ class _FindPasswordState extends State<FindPassword> {
         .get();
 
     if (snapshot.docs.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('오류'),
-            content: Text('이름과 회원번호 및 전화번호를 다시 한 번 확인 해주세요.'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('확인'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      _showErrorDialog('이름과 회원번호 및 전화번호를 다시 한 번 확인 해주세요.');
     } else {
       setState(() {
         _isVerificationCodeSent = true;
@@ -74,27 +58,51 @@ class _FindPasswordState extends State<FindPassword> {
       });
       _startTimer();
 
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: formattedPhoneNumber,
-        timeout: Duration(seconds: 60),
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await FirebaseAuth.instance.signInWithCredential(credential);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          print('Failed to verify phone number: ${e.message}');
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          setState(() {
-            _verificationId = verificationId;
-          });
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          setState(() {
-            _verificationId = verificationId;
-          });
-        },
-      );
+      try {
+        await FirebaseAuth.instance.verifyPhoneNumber(
+          phoneNumber: formattedPhoneNumber,
+          timeout: Duration(seconds: 60),
+          verificationCompleted: (PhoneAuthCredential credential) async {
+            await FirebaseAuth.instance.signInWithCredential(credential);
+          },
+          verificationFailed: (FirebaseAuthException e) {
+            _showErrorDialog('인증 실패: ${e.message}');
+          },
+          codeSent: (String verificationId, int? resendToken) {
+            setState(() {
+              _verificationId = verificationId;
+            });
+          },
+          codeAutoRetrievalTimeout: (String verificationId) {
+            setState(() {
+              _verificationId = verificationId;
+            });
+          },
+        );
+      } catch (e) {
+        _showErrorDialog('인증 실패: $e');
+      }
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('오류'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _startTimer() {
@@ -131,23 +139,7 @@ class _FindPasswordState extends State<FindPassword> {
         String password = await _getMemberPassword();
         _showMemberPassword(password);
       } catch (e) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('오류'),
-              content: Text('인증 번호가 잘못되었습니다.'),
-              actions: <Widget>[
-                TextButton(
-                  child: Text('확인'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
+        _showErrorDialog('인증 번호가 잘못되었습니다.');
       }
     }
   }
@@ -199,7 +191,7 @@ class _FindPasswordState extends State<FindPassword> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('회원번호 찾기'),
+        title: Text('비밀번호 찾기'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
